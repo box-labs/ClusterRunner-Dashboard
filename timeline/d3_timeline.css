@@ -1,0 +1,172 @@
+
+.mainTableDiv {
+	width: 100%;
+	overflow: auto;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	margin-bottom: -10px;  /* this is to compensate for a mysterious 3 pixel gap at the bottom of the div :( */
+}
+
+.tableBackground {
+	fill: #f3f3f3;
+}
+
+.timeAxisDiv {
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+	background-color: white;  /* don't let the table div show through */
+}
+
+.axis {
+	shape-rendering: crispEdges;
+}
+
+.axis line, .axis path {
+	fill: none;
+	stroke: #000;
+}
+
+.gridlines, .gridlines line {
+	fill: none;
+	stroke: #FFF;
+}
+
+.timespan rect, .timespan polygon {
+	fill: #7AB8DB;
+}
+.timespan.timespanHover rect, .timespan.timespanHover polygon {
+	fill: #a3e0ff;
+	stroke: rgba(0, 0, 0, 0.7);
+	stroke-width: 2px;
+}
+
+.tick text, .hoverLineLabel, .rowLabel {
+	font-size: 10px;
+}
+
+.gridlines text, .gridlines .domain {
+	display: none;
+}
+
+.hoverline {
+	shape-rendering: crispEdges;
+	stroke-width: 1px;
+	stroke: #ffb4ac;
+	fill: none;
+}
+
+.horizontalGridLine {
+	stroke: #dddddd;
+	stroke-width: 1px;
+}
+
+.spanTextOverflowing {
+	visibility: hidden;
+}
+
+.spanText {
+
+}
+
+.scrollableTable {
+	position: absolute;
+	overflow: auto;
+	height: 520px;
+}
+
+/* colors for rows */
+.color00 rect, .color00 polygon {fill: #7AB8DB}
+.color01 rect, .color01 polygon {fill: #EA9A8E}
+.color02 rect, .color02 polygon {fill: #D1C87F}
+.color03 rect, .color03 polygon {fill: #E98DBC}
+.color04 rect, .color04 polygon {fill: #8EAEEA}
+.color05 rect, .color05 polygon {fill: #A9CF62}
+.color06 rect, .color06 polygon {fill: #8F8DE7}
+.color07 rect, .color07 polygon {fill: #E6B667}
+.color08 rect, .color08 polygon {fill: #C18FE8}
+.color09 rect, .color09 polygon {fill: #87D67B}
+.color10 rect, .color10 polygon {fill: #EDB293}
+.color11 rect, .color11 polygon {fill: #7AC79B}
+
+
+
+/*
+Styling for d3-tip. This only is used if users include d3-tip.js (recommended)
+*/
+.d3-tip, .d3-tip pre {
+	line-height: 1.3em;
+}
+.d3-tip pre {
+	font-family: "Lucida Console", "Courier New", "Consolas", monospace;
+	font-size: 11px;
+	margin: 0;
+}
+.d3-tip span {
+	line-height: 1.5em;
+	font-size: 12px;
+}
+.d3-tip .tipTitle {
+	color: #8ccbff;
+}
+
+
+.d3-tip {
+	line-height: 1;
+	font-weight: bold;
+	padding: 12px;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	border-radius: 2px;
+	pointer-events: none;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	width: 100%;
+	line-height: 1;
+	color: rgba(0, 0, 0, 0.8);
+	position: absolute;
+	pointer-events: none;
+}
+
+/* Northward tooltips */
+.d3-tip.n:after {
+	content: "\25BC";
+	margin: -1px 0 0 0;
+	top: 100%;
+	left: 0;
+	text-align: center;
+}
+
+/* Eastward tooltips */
+.d3-tip.e:after {
+	content: "\25C0";
+	margin: -4px 0 0 0;
+	top: 50%;
+	left: -8px;
+}
+
+/* Southward tooltips */
+.d3-tip.s:after {
+	content: "\25B2";
+	margin: 0 0 1px 0;
+	top: -8px;
+	left: 0;
+	text-align: center;
+}
+
+/* Westward tooltips */
+.d3-tip.w:after {
+	content: "\25B6";
+	margin: -4px 0 0 -1px;
+	top: 50%;
+	left: 100%;
+}
+/*
+End styling for d3-tip.
+*/
