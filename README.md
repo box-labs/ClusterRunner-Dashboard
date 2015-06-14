@@ -38,7 +38,8 @@ To build the javascript run:
 npm install -g watchify  # only needed first time only
 timeline/watchify.sh
 ```
-Watchify will run in the background and rebuild the single javascript file `bundle.js` whenever you make edits.
+Watchify will run in the background and rebuild the single javascript file `clusterrunner_timeline.js` whenever you
+make edits.
 
 The url of the ClusterRunner master is specified using the `master` query paramter. Alternatively, you may also specify
 the master's url in the [`dashboard.ini`](dashboard.ini) conf file. Again, more query params are defined in
