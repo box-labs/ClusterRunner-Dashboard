@@ -85,10 +85,30 @@ cls.update = function()
                 slaveDatum: slaveDatum,
                 size: conf.slaveCircleSize,
                 classes: function() {
-                    var extraClass = 'idle';
-                    if (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0) extraClass = 'busy';
-                    if (_this._healthCheckDatasource.data[this.slaveDatum.id] === false) extraClass = 'dead';
-                    return 'slaveCircle ' + extraClass;
+                    var extraClasses = '';
+                    var slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
+                    var slaveIsUnresponsive = _this._healthCheckDatasource.data[this.slaveDatum.id] === false;
+                    var slaveIsResponsive = _this._healthCheckDatasource.data[this.slaveDatum.id] === true;
+                    var slaveIsMarkedDead = this.slaveDatum.is_alive === false;
+
+                    if (slaveIsResponsive) {
+                        extraClasses += 'responsive ';
+                    }
+                    else if (slaveIsUnresponsive) {
+                        extraClasses += 'unresponsive ';
+                    }
+
+                    if (slaveIsMarkedDead) {
+                        extraClasses += 'dead ';
+                    }
+                    else if (slaveIsBusy) {
+                        extraClasses += 'busy ';
+                    }
+                    else {
+                        extraClasses += 'idle ';
+                    }
+
+                    return 'slaveCircle ' + extraClasses;
                 },
                 wallRepelForce: conf.slaveWallRepelForce,
                 link: null,

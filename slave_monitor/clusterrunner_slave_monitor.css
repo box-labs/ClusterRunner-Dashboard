@@ -88,14 +88,17 @@ pre {
     font-size: 0.8em;
 }
 
+
 .slaveCircle {
     stroke-width: 1;
     stroke-dasharray: 6.28;
-    /*stroke-width: 2;*/
-    /*stroke-dasharray: 9.28, 3.28;*/
-    /*stroke-dashoffset: 7.85;*/
 }
 
+/* dead/busy/idle */
+.slaveCircle.dead {
+    fill: rgb(177, 5, 2);
+    stroke: rgb(177, 5, 2);
+}
 .slaveCircle.busy {
     fill: rgb(255, 217, 47);
     stroke: rgb(255, 217, 47);
@@ -103,16 +106,32 @@ pre {
     animation: dash 10s linear infinite;
     -webkit-animation: dash 10s linear infinite;
 }
-
 .slaveCircle.idle {
     fill: #c8c8c8;
     stroke: #c8c8c8;
 }
 
-.slaveCircle.dead {
+/* responsive, dead/busy/idle */
+.slaveCircle.dead.responsive {
+    fill: rgb(177, 5, 2);  /* todo: blinking between red and grey */
+    stroke: rgb(177, 5, 2);
+}
+.slaveCircle.busy.responsive {
+}
+.slaveCircle.idle.responsive {
+}
+
+/* unresponsive, dead/busy/idle */
+.slaveCircle.dead.unresponsive {
     fill: rgb(177, 5, 2);
     stroke: rgb(177, 5, 2);
 }
+.slaveCircle.busy.unresponsive, .slaveCircle.idle.unresponsive {
+    fill: rgb(177, 5, 2); /* todo: blinking outline */
+    stroke: rgb(177, 5, 2);
+}
+
+
 
 .slaveLink {
     stroke: black;
