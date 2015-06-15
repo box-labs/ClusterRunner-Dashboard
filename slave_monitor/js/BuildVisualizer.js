@@ -72,7 +72,7 @@ cls.update = function()
     currentActiveSlaveData.map(function(slaveDatum) {
         newBuildIds[slaveDatum.current_build_id] = true;  // value doesn't matter -- we just need the keys
     });
-    newBuildIds = Object.keys(newBuildIds).sort();;
+    newBuildIds = Object.keys(newBuildIds).sort();
 
     // Generate a map from build id to graphNode
     var graphNodesByBuildId = {};
@@ -94,7 +94,7 @@ cls.update = function()
         if (buildId in graphNodesByBuildId) {
             // if we already have a node for this id, just update that object instead of replacing it (the object has extra positioning data that we want to preserve)
             graphNode = graphNodesByBuildId[buildId];
-        } else {
+        } else if (buildId in this._buildQueueDatasource.data) {
             // otherwise this is a new graph node
             graphNode = {
                 type: 'build',
@@ -117,6 +117,8 @@ cls.update = function()
                     graphNode.fromQueue = true;  // flag to enable animating between queued and active appearances
                 }
             }
+        } else {
+            continue;
         }
         updatedGraphNodesList.push(graphNode);
     }
@@ -153,7 +155,7 @@ cls._updateQueueVisualization = function(newActiveBuildIds)
         });
     }
     this._queuedBuildNodes = nodes;
-}
+};
 
 cls._updateSvgElements = function()
 {
