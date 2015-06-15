@@ -7,6 +7,19 @@ ClusterRunner at [clusterrunner.com](clusterrunner.com) and in the [ClusterRunne
 Dashboards are loaded via `index.php` in their respective directories. 
 
 
+#### Requirements
+These dashboards make ajax requests directly to the ClusterRunner master and slave APIs, so you will probably need
+to set the `cors_allowed_origins_regex` setting in your 
+[clusterrunner.conf](https://github.com/box/ClusterRunner/blob/master/conf/default_clusterrunner.conf) file to an
+appropriate value. For example, if your web server is serving these pages at `http://unicorn.my-org.net:6174` then
+an appropriate clusterrunner.conf setting might be:
+```ini
+# ~/.clusterrunner/clusterrunner.conf
+[general]
+cors_allowed_origins_regex = ^http://[^.]*\.my-org\.net
+```
+
+
 Slave Monitor
 -------------
 This is a visualization of the current status of your cluster. It shows builds as they are queued and which slaves
