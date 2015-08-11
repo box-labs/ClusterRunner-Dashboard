@@ -27,6 +27,8 @@ Slave Monitor
 This is a visualization of the current status of your cluster. It shows builds as they are queued and which slaves
 are working on each build.
 
+![](/_docs/clusterrunner.gif)
+
 To build the javascript run:
 ```bash
 npm install -g watchify  # only needed first time only
