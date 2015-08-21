@@ -108,17 +108,23 @@ cls._startVisualization = function(visualizers)
 
         var nodes = [], links = [];
         var graphStateChanged = false;
-        visualizers.map(function (visualizer) {
+        visualizers.forEach(function (visualizer) {
             graphStateChanged = visualizer.update() || graphStateChanged;
             nodes = nodes.concat(visualizer.getNodes());
             links = links.concat(visualizer.getLinks());
+        });
+
+        //d3 removes all existing click handlers on an element before adding a
+        // new one. https://github.com/mbostock/d3/wiki/Selections#on
+        d3.selectAll('.slaveCircle').on('click', function(e, i) {
+            window.open('http://' + e.slaveDatum.url + '/v1', '');
         });
         if (graphStateChanged) {
             force.nodes(nodes).links(links);
             force.start();
         }
     }
-    visualizers.map(function(visualizer) {
+    visualizers.forEach(function(visualizer) {
         visualizer.init(g, force, conf.width, conf.height)
     });
     setTimeout(update, 1000);  // initial delay to give data sources a chance to update
