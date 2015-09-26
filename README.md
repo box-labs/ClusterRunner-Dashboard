@@ -45,10 +45,13 @@ The main code entry point from index.php is
 
 Timeline
 --------
-This is a visualization of build execution over time. The timeline dashboard by default shows the start and end time
-for subjobs of every build during the last thirty minutes, but both the overall time window and the displayed builds
-can be adjusted using query parameters. See the code at the top of [timeline/index.php](timeline/index.php) for query 
-parameter documentation.
+This is a visualization of build execution over time.
+
+![](/_docs/clusterrunner_timeline.png)
+
+The timeline dashboard shows the start and end time for subjobs of each build during a time range, configurable via 
+query parameters. Both the overall time window and the displayed builds can be adjusted. See the code at the top of
+[timeline/index.php](timeline/index.php) for query parameter documentation.
 
 To build the javascript run:
 ```bash
