@@ -171,6 +171,16 @@ cls._updateSvgElements = function()
         .append('circle')
         .attr('class', function(d) { return 'buildCircle ' + (d.extraClass || '') })
         .attr('r', function(d) { return d.size; });
+    enterSelection
+        .append('svg:image')
+        .attr('xlink:href', 'themes/thanksgiving/cookedturkey.png')
+        .attr('x', '-115')
+        .attr('y', '-105')
+        .attr('width', '240')
+        .attr('height', '240')
+
+        .attr('class', function(d) { return 'buildCircle ' + (d.extraClass || '') });
+
     buildCircles.filter(function(d) {return !d.preventQueueAnimation})
         .attr('class', '')  // remove class so we can animate properties
         .style('stroke-width', this._dummyQueuedBuildGraphic.style('stroke-width'))
@@ -200,12 +210,28 @@ cls._updateSvgElements = function()
         .append('tspan')
         .attr('x', 0)
         .attr('dy', '0em')
+        .attr('fill', 'black')
+        .text(function(d) {return (d.hideLabel) ? '' : (d.alternateLabel) ? d.alternateLabel : '#' + d.buildId});
+    this._buildLabels
+        .append('tspan')
+        .attr('x', 0)
+        .attr('dx', '-2px')
+        .attr('dy', '-1px')
         .text(function(d) {return (d.hideLabel) ? '' : (d.alternateLabel) ? d.alternateLabel : '#' + d.buildId});
     this._buildLabels
         .append('tspan')
         .attr('class', 'buildLabelJobName')
         .attr('x', 0)
         .attr('dy', '1.4em')
+        .attr('fill', 'black')
+        .attr('font-size', '70%')
+        .text(function(d) {return (d.hideLabel) ? '' : d.jobName});
+    this._buildLabels
+        .append('tspan')
+        .attr('class', 'buildLabelJobName')
+        .attr('x', 0)
+        .attr('dx', '-2px')
+        .attr('dy', '-1px')
         .attr('font-size', '70%')
         .text(function(d) {return (d.hideLabel) ? '' : d.jobName});
 
@@ -214,7 +240,7 @@ cls._updateSvgElements = function()
         .transition().duration(conf.buildTransitionExitDuration)
             .attr('transform', function(d) {return 'translate(' + d.x + ', ' + conf.buildGraphicsPosYExit + ')'})
             .remove();
-    exitSelection.selectAll('circle')
+    exitSelection.selectAll('image')
         .transition().duration(conf.buildTransitionExitDuration)
             .attr('class', 'buildGraphicGroup completed')
             .style('fill', 'rgb(166, 216, 84)');

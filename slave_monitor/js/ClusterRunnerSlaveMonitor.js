@@ -53,9 +53,32 @@ cls._startVisualization = function(visualizers)
     conf.width = this._getNumericalStyleAttribute(this._container, 'width');
     conf.height = this._getNumericalStyleAttribute(this._container, 'height');
 
+    var timeoutId = null;
+
+    function showSlaveNums() {
+        d3.selectAll('.slaveLabel').style('opacity', 1);
+    }
+
+    function hideSlaveNums() {
+        d3.selectAll('.slaveLabel').style('opacity', 0);
+    }
+
+    function hideSlaveNumsAfterDelay(delay) {
+        return setTimeout(hideSlaveNums, delay * 1000);
+    }
+
+    function mousemove() {
+        clearTimeout(timeoutId);
+        showSlaveNums();
+        timeoutId = hideSlaveNumsAfterDelay(10);
+    }
+
     var g = this._container.append('svg')
         .attr('width', conf.width)
         .attr('height', conf.height)
+        //.attr('xmlns', 'http://www.w3.org/2000/svg')
+        //.attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+        .on('mousemove', mousemove)
         .append('g');
 
     var force = d3.layout.force();

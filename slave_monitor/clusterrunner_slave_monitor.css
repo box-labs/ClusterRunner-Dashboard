@@ -5,13 +5,17 @@ html, body, h2, p {
 	font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
 }
 
+html {
+    background-color: #E38755;
+}
+
 pre {
 	font-family: "Consolas", "Panic Sans", "Courier New", monospace;
 }
 
 .clusterRunnerHeader {
 	height: 50px;  /* should be same as .dashboard top */
-	background-color: white;
+	background-color: #f7ce98;
 	border-bottom: double 3px #888;
 	box-sizing: border-box;
 
@@ -19,6 +23,7 @@ pre {
 }
 .clusterRunnerTitle {
 	float: left;
+    color: #76460E;
 }
 .clusterRunnerHeader h2 {
 	margin: 0 0 0 30px;
@@ -86,6 +91,9 @@ pre {
 
 .slaveLabel {
     font-size: 0.8em;
+    fill: white;
+    opacity: 0; /* start hidden */
+    transition: opacity 1s ease-in-out;
 }
 
 
@@ -100,15 +108,15 @@ pre {
     stroke: rgb(177, 5, 2);
 }
 .slaveCircle.busy {
-    fill: rgb(255, 217, 47);
-    stroke: rgb(255, 217, 47);
+    fill: rgb(243, 190, 32);
+    stroke: rgb(243, 190, 32);
 
     animation: dash 10s linear infinite;
     -webkit-animation: dash 10s linear infinite;
 }
 .slaveCircle.idle {
-    fill: #c8c8c8;
-    stroke: #c8c8c8;
+    fill: #FBF2C2;
+    stroke: #FBF2C2;
 }
 
 /* responsive, dead/busy/idle */
@@ -139,14 +147,14 @@ pre {
 }
 
 .buildCircle {
-    fill: rgb(141, 160, 203);
-    stroke: rgb(80, 95, 127);
-    stroke-width: 7;
-    stroke-dasharray: 62.8;  /* = (2πr/num_segments) = (2π * 100 / 10) */
-    stroke-dashoffset: 0;
+    fill: rgba(0, 0, 0, 0);
+    /*stroke: rgb(80, 95, 127);*/
+    /*stroke-width: 7;*/
+    /*stroke-dasharray: 62.8;  /!* = (2πr/num_segments) = (2π * 100 / 10) *!/*/
+    /*stroke-dashoffset: 0;*/
 
-    animation: dash 30s linear infinite;
-    -webkit-animation: dash 30s linear infinite;
+    /*animation: dash 30s linear infinite;*/
+    /*-webkit-animation: dash 30s linear infinite;*/
 }
 @keyframes dash {
     from {stroke-dashoffset: 628}  /* 2 * π * 100 */
@@ -163,8 +171,7 @@ pre {
 }
 
 .buildCircle.idleAttractor {
-    fill: rgba(0, 0, 0, 0);
-    stroke:none;
+    display: none;
 }
 
 .queuedBuildGraphic {
@@ -191,6 +198,7 @@ pre {
     font-size: 1.6em;
     font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
     font-weight: 300;
+    fill: white;
 }
 
 .buildLabelJobName {
