@@ -39,8 +39,9 @@ $debugMode = $_GET['debug'] == 'true';
         DEBUG_MODE = <?php echo $debugMode ? 'true' : 'false'; ?>;
         Log.setLevel(Log.WARNING);
         if (DEBUG_MODE) {
-        //    Log.setLevel(Log.DEBUG);
-            FakeData.beginAutoRepeatingProgression();
+//            Log.setLevel(Log.DEBUG);
+//            FakeData.beginAutoRepeatingProgression();
+            FakeData.progressDataSequence();
         }
 
         monitor = new ClusterRunnerSlaveMonitor('.dashboard', masterUrl, hostAbbrevRegex);
