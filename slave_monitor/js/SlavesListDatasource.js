@@ -68,6 +68,10 @@ cls.start = function()
             // Add all elements in newData to the existing data object
             for (var i = 0; i < newData.length; i++) {
                 var slave = newData[i];
+                // If the slave has been deliberately put into shutdown mode, and is no longer online, then do not render that slave.
+                if (!slave['is_alive'] && slave['is_in_shutdown_mode']) {
+                    continue;
+                }
                 _this.data[slave['id']] = slave;
             }
 
