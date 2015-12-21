@@ -6,7 +6,7 @@ html, body, h2, p {
 }
 
 html {
-    background-color: #E38755;
+    background-color: #90e398;
 }
 
 pre {
@@ -94,47 +94,48 @@ pre {
     fill: white;
     opacity: 0; /* start hidden */
     transition: opacity 1s ease-in-out;
+    text-anchor: middle;
 }
 
 
-.slaveCircle {
+.slaveGraphicGroup circle {
     stroke-width: 1;
     stroke-dasharray: 6.28;
 }
 
 /* dead/busy/idle */
-.slaveCircle.dead {
+.slaveGraphicGroup.dead circle {
     fill: rgb(177, 5, 2);
     stroke: rgb(177, 5, 2);
 }
-.slaveCircle.busy {
+.slaveGraphicGroup.busy circle {
     fill: rgb(243, 190, 32);
     stroke: rgb(243, 190, 32);
 
     animation: dash 10s linear infinite;
     -webkit-animation: dash 10s linear infinite;
 }
-.slaveCircle.idle {
+.slaveGraphicGroup.idle circle {
     fill: #FBF2C2;
     stroke: #FBF2C2;
 }
 
 /* responsive, dead/busy/idle */
-.slaveCircle.dead.responsive {
+.slaveGraphicGroup.dead.responsive circle {
     fill: rgb(177, 5, 2);  /* todo: blinking between red and grey */
     stroke: rgb(177, 5, 2);
 }
-.slaveCircle.busy.responsive {
+.slaveGraphicGroup.busy.responsive circle {
 }
-.slaveCircle.idle.responsive {
+.slaveGraphicGroup.idle.responsive circle {
 }
 
 /* unresponsive, dead/busy/idle */
-.slaveCircle.dead.unresponsive {
+.slaveGraphicGroup.dead.unresponsive circle {
     fill: rgb(177, 5, 2);
     stroke: rgb(177, 5, 2);
 }
-.slaveCircle.busy.unresponsive, .slaveCircle.idle.unresponsive {
+.slaveGraphicGroup.busy.unresponsive circle, .slaveGraphicGroup.idle.unresponsive circle {
     fill: rgb(177, 5, 2); /* todo: blinking outline */
     stroke: rgb(177, 5, 2);
 }
@@ -147,7 +148,9 @@ pre {
 }
 
 .buildCircle {
-    fill: rgba(0, 0, 0, 0);
+    /*fill: rgba(0, 0, 0, 0);*/
+    fill: rgba(255, 255, 255, 0.5);
+
     /*stroke: rgb(80, 95, 127);*/
     /*stroke-width: 7;*/
     /*stroke-dasharray: 62.8;  /!* = (2πr/num_segments) = (2π * 100 / 10) *!/*/

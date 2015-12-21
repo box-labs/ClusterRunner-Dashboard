@@ -173,11 +173,13 @@ cls._updateSvgElements = function()
         .attr('r', function(d) { return d.size; });
     enterSelection
         .append('svg:image')
-        .attr('xlink:href', 'themes/thanksgiving/cookedturkey.png')
-        .attr('x', '-115')
-        .attr('y', '-105')
-        .attr('width', '240')
-        .attr('height', '240')
+        //.attr('xlink:href', 'themes/thanksgiving/cookedturkey.png')
+        .attr('xlink:href', 'themes/christmas/wreath-transparent.png')
+        //.attr('xlink:href', 'themes/christmas/Christmas_lights.gif')
+        .attr('x', '-125')
+        .attr('y', '-125')
+        .attr('width', '250')
+        .attr('height', '250')
 
         .attr('class', function(d) { return 'buildCircle ' + (d.extraClass || '') });
 

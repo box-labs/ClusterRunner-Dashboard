@@ -11,8 +11,8 @@ function SlaveVisualizer(slaveDatasource, healthCheckDatasource, buildVisualizer
     this._healthCheckDatasource = healthCheckDatasource;
     this._hostAbbrevRegex = hostAbbrevRegex;
 
-    this._slaveCircles = null;
-    this._slaveLabels = null;
+    this._slaveGraphicGroups = null;
+    //this._slaveLabels = null;
 
     this._force = null;
     this._width = null;
@@ -24,8 +24,8 @@ var cls = SlaveVisualizer.prototype;
 
 cls.init = function(g, force, width, height)
 {
-    this._slaveCircles = g.selectAll('.slaveCircle');
-    this._slaveLabels = g.selectAll('.slaveLabel');
+    this._slaveGraphicGroups = g.selectAll('.slaveCircle');
+    //this._slaveLabels = g.selectAll('.slaveLabel');
     this._slaveToBuildLinks = g.selectAll('.slaveToBuildLinks');
 
     this._force = force;
@@ -84,7 +84,7 @@ cls.update = function()
                 type: 'slave',
                 slaveDatum: slaveDatum,
                 size: conf.slaveCircleSize,
-                classes: function() {
+                classes: function() {  // todo: should this just go down in the svg part where classes() is called?
                     var extraClasses = '';
                     var slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
                     var slaveIsUnresponsive = _this._healthCheckDatasource.data[this.slaveDatum.id] === false;
@@ -108,7 +108,7 @@ cls.update = function()
                         extraClasses += 'idle ';
                     }
 
-                    return 'slaveCircle ' + extraClasses;
+                    return 'slaveGraphicGroup ' + extraClasses;
                 },
                 wallRepelForce: conf.slaveWallRepelForce,
                 link: null,
@@ -151,46 +151,51 @@ cls.update = function()
 
 cls._updateSvgElements = function()
 {
-    this._slaveCircles = this._slaveCircles.data(this._graphNodes, function(d) {return d.slaveDatum['url']});
-    this._slaveCircles.enter()
-        .append('circle')
-        .attr('r', function(d) { return d.size; })
+    this._slaveGraphicGroups = this._slaveGraphicGroups.data(this._graphNodes, function(d) {return d.slaveDatum['url']});
+
+    // Create
+    var enterSelection = this._slaveGraphicGroups.enter()
+        .insert('g')
+        .attr('class', 'slaveGraphicGroup')
         .call(this._force.drag);
+
+    enterSelection
+        .append('circle')
+        .attr('r', function(d) { return d.size; });
+
+    var hostAbbrevRegex = this._hostAbbrevRegex;
+    var slaveLabels = enterSelection
+        .append('text')
+        .attr('class', 'slaveLabel')
+        .attr('x', 0)
+        .attr('y', function(d) { return d.size + 9; })
+        .text(function(d) {
+            var slaveUrl = d.slaveDatum['url'];
+
+            // generate an abbreviated hostname from the dashboard.ini conf value
+            var matches = (new RegExp(hostAbbrevRegex, 'g')).exec(slaveUrl);
+            if (matches && matches.length > 1) {
+                return matches[1];
+            }
+
+            // if no conf value specified, extract the last numerical sequence before the port number (if any)
+            matches = /(\d+)[\D]*:\d+$/.exec(slaveUrl);
+            if (matches && matches.length > 1) {
+                return matches[1];
+            }
+
+            // if still no match, just abbreviate the hostname
+            return slaveUrl.substring(0, 7) + '...';
+        });
+
     // Destroy
-    this._slaveCircles.exit()
+    this._slaveGraphicGroups.exit()
         .remove();
+
     // Update
-    this._slaveCircles
+    this._slaveGraphicGroups
         .attr('class', function(d) { return d.classes(); });
 
-    this._slaveLabels = this._slaveLabels.data(this._graphNodes, function(d) {return d.slaveDatum['url']});
-    // Create
-    this._slaveLabels.enter().append('text')
-        .attr('class', 'slaveLabel')
-        .call(this._force.drag);
-    // Destroy
-    this._slaveLabels.exit()
-        .remove();
-    // Update
-    var hostAbbrevRegex = this._hostAbbrevRegex;
-    this._slaveLabels.text(function(d) {
-        var slaveUrl = d.slaveDatum['url'];
-
-        // generate an abbreviated hostname from the dashboard.ini conf value
-        var matches = (new RegExp(hostAbbrevRegex, 'g')).exec(slaveUrl);
-        if (matches && matches.length > 1) {
-            return matches[1];
-        }
-
-        // if no conf value specified, extract the last numerical sequence before the port number (if any)
-        matches = /(\d+)[\D]*:\d+$/.exec(slaveUrl);
-        if (matches && matches.length > 1) {
-            return matches[1];
-        }
-
-        // if still no match, just abbreviate the hostname
-        return slaveUrl.substring(0, 7) + '...';
-    });
 
     if (conf.features.drawSlaveLinks) {
         this._slaveToBuildLinks = this._slaveToBuildLinks.data(this._graphLinks, function(d) {return d.source.slaveDatum['url']});
@@ -243,16 +248,20 @@ cls.tick = function(e)
             })});
     });
 
-    // update positions of svg circles
-    this._slaveCircles
-        .attr('cx', function(d) { return d.x; })
-        .attr('cy', function(d) { return d.y; });
+    //// update positions of svg circles
+    //this._slaveGraphicGroups
+    //    .attr('cx', function(d) { return d.x; })
+    //    .attr('cy', function(d) { return d.y; });
+
+    // update positions of build graphics
+    this._slaveGraphicGroups
+        .attr('transform', function(d) {return 'translate(' + d.x + ', ' + d.y + ')'});
 
     // update positions of text labels
-    this._slaveLabels
-        .attr('text-anchor', 'middle')
-        .attr('x', function(d) { return d.x; })
-        .attr('y', function(d) { return d.y + d.size + 9; });
+    //this._slaveLabels
+    //    .attr('text-anchor', 'middle')
+    //    .attr('x', function(d) { return d.x; })
+    //    .attr('y', function(d) { return d.y + d.size + 9; });
 
     if (conf.features.drawSlaveLinks) {
         // update positions of svg lines
