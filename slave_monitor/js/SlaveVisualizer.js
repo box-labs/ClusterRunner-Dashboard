@@ -4,6 +4,21 @@ var Log = require('./Log.js');
 var Visualizer = require('./Visualizer.js');
 
 
+var errorLightImage = 'themes/christmas/red_light.gif';
+var inactiveLightImage = 'themes/christmas/grey_light_noblink.gif';
+var lightImagesByColor = {
+    'green': 'themes/christmas/green_light.gif',
+    'blue': 'themes/christmas/blue_light.gif',
+    'purple': 'themes/christmas/purple_light.gif',
+    'yellow': 'themes/christmas/yellow_light.gif'
+};
+
+function randomColor() {
+    var lightColors = Object.keys(lightImagesByColor);
+    return lightColors[Math.floor(lightColors.length * Math.random())];
+}
+
+
 function SlaveVisualizer(slaveDatasource, healthCheckDatasource, buildVisualizer, hostAbbrevRegex)
 {
     this._slaveDatasource = slaveDatasource;
@@ -83,6 +98,7 @@ cls.update = function()
             graphNode = {
                 type: 'slave',
                 slaveDatum: slaveDatum,
+                lightColor: randomColor(),
                 size: conf.slaveCircleSize,
                 classes: function() {  // todo: should this just go down in the svg part where classes() is called?
                     var extraClasses = '';
@@ -159,9 +175,22 @@ cls._updateSvgElements = function()
         .attr('class', 'slaveGraphicGroup')
         .call(this._force.drag);
 
+    //enterSelection
+    //    .append('circle')
+    //    .attr('r', function(d) { return d.size; });
+
+    var imgScaleFactor = 1;
+    var imgW = 46;
+    var imgH = 31;
     enterSelection
-        .append('circle')
-        .attr('r', function(d) { return d.size; });
+        .append('svg:image')
+        .attr('class', 'slaveImage')
+        //.attr('xlink:href', function(d) {return lightImagesByColor[d.lightColor]})
+        .attr('x', -imgScaleFactor * imgW / 2)
+        .attr('y', -imgScaleFactor * imgH / 2)
+        .attr('width', imgScaleFactor * imgW)
+        .attr('height', imgScaleFactor * imgH)
+        .attr('transform', function() {return 'rotate(' + Math.random() * 360 + ')'});
 
     var hostAbbrevRegex = this._hostAbbrevRegex;
     var slaveLabels = enterSelection
@@ -196,6 +225,18 @@ cls._updateSvgElements = function()
     this._slaveGraphicGroups
         .attr('class', function(d) { return d.classes(); });
 
+    this._slaveGraphicGroups
+        .selectAll('.slaveImage')
+        .attr('xlink:href', function(d) {
+            var containingGroup = d3.select(this.parentNode);
+            if (containingGroup.classed('unresponsive') || containingGroup.classed('dead')) {
+                return errorLightImage;
+            }
+            if (containingGroup.classed('idle')) {
+                return inactiveLightImage;
+            }
+            return lightImagesByColor[d.lightColor]
+        });
 
     if (conf.features.drawSlaveLinks) {
         this._slaveToBuildLinks = this._slaveToBuildLinks.data(this._graphLinks, function(d) {return d.source.slaveDatum['url']});

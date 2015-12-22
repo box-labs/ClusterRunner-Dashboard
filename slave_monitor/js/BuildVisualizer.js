@@ -163,7 +163,7 @@ cls._updateSvgElements = function()
 
     this._buildGraphicGroups = this._buildGraphicGroups.data(this._graphNodes, function(d) {return d.buildId});
     var enterSelection = this._buildGraphicGroups.enter()
-        .insert('g', '.slaveCircle')  // insert before .slaveCircle to show slaves on top
+        .insert('g', '.slaveGraphicGroup')  // insert before .slaveGraphicGroup to show slaves on top
         .attr('class', 'buildGraphicGroup')
         .call(this._force.drag);
 
@@ -173,9 +173,7 @@ cls._updateSvgElements = function()
         .attr('r', function(d) { return d.size; });
     enterSelection
         .append('svg:image')
-        //.attr('xlink:href', 'themes/thanksgiving/cookedturkey.png')
         .attr('xlink:href', 'themes/christmas/wreath-transparent.png')
-        //.attr('xlink:href', 'themes/christmas/Christmas_lights.gif')
         .attr('x', '-125')
         .attr('y', '-125')
         .attr('width', '250')

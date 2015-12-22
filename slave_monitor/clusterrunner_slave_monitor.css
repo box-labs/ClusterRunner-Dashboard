@@ -15,7 +15,7 @@ pre {
 
 .clusterRunnerHeader {
 	height: 50px;  /* should be same as .dashboard top */
-	background-color: #f7ce98;
+	background-color: rgb(141, 8, 8);
 	border-bottom: double 3px #888;
 	box-sizing: border-box;
 
@@ -23,7 +23,7 @@ pre {
 }
 .clusterRunnerTitle {
 	float: left;
-    color: #76460E;
+    color: white;
 }
 .clusterRunnerHeader h2 {
 	margin: 0 0 0 30px;
@@ -99,8 +99,8 @@ pre {
 
 
 .slaveGraphicGroup circle {
-    stroke-width: 1;
-    stroke-dasharray: 6.28;
+    stroke-width: 0;
+    /*stroke-dasharray: 6.28;*/
 }
 
 /* dead/busy/idle */
@@ -112,8 +112,8 @@ pre {
     fill: rgb(243, 190, 32);
     stroke: rgb(243, 190, 32);
 
-    animation: dash 10s linear infinite;
-    -webkit-animation: dash 10s linear infinite;
+    /*animation: dash 10s linear infinite;*/
+    /*-webkit-animation: dash 10s linear infinite;*/
 }
 .slaveGraphicGroup.idle circle {
     fill: #FBF2C2;
@@ -148,8 +148,8 @@ pre {
 }
 
 .buildCircle {
-    /*fill: rgba(0, 0, 0, 0);*/
-    fill: rgba(255, 255, 255, 0.5);
+    fill: rgba(0, 0, 0, 0);
+    /*fill: rgba(255, 255, 255, 0.5);*/
 
     /*stroke: rgb(80, 95, 127);*/
     /*stroke-width: 7;*/

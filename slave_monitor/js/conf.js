@@ -32,7 +32,7 @@ var conf = {
     defaultLinkLength: 15,
     defaultLinkStrength: 0.4,
 
-    buildSize: 100,
+    buildSize: 115,
     buildCharge: -900,
 
     queuedBuildSize: 15,

@@ -40,7 +40,7 @@ $debugMode = $_GET['debug'] == 'true';
         Log.setLevel(Log.WARNING);
         if (DEBUG_MODE) {
 //            Log.setLevel(Log.DEBUG);
-//            FakeData.beginAutoRepeatingProgression();
+            FakeData.beginAutoRepeatingProgression();
             FakeData.progressDataSequence();
         }
 
