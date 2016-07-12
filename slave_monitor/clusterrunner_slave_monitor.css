@@ -111,27 +111,6 @@ pre {
     stroke: #c8c8c8;
 }
 
-/* responsive, dead/busy/idle */
-.slaveCircle.dead.responsive {
-    fill: rgb(177, 5, 2);  /* todo: blinking between red and grey */
-    stroke: rgb(177, 5, 2);
-}
-.slaveCircle.busy.responsive {
-}
-.slaveCircle.idle.responsive {
-}
-
-/* unresponsive, dead/busy/idle */
-.slaveCircle.dead.unresponsive {
-    fill: rgb(177, 5, 2);
-    stroke: rgb(177, 5, 2);
-}
-.slaveCircle.busy.unresponsive, .slaveCircle.idle.unresponsive {
-    fill: rgb(177, 5, 2); /* todo: blinking outline */
-    stroke: rgb(177, 5, 2);
-}
-
-
 
 .slaveLink {
     stroke: black;

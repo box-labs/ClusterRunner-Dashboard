@@ -1,7 +1,6 @@
 
 var BuildQueueDatasource = require('./BuildQueueDatasource.js');
 var BuildVisualizer = require('./BuildVisualizer.js');
-var ClusterHealthCheckDatasource = require('./ClusterHealthCheckDatasource.js');
 var conf = require('./conf.js');
 var Network = require('./Network.js');
 var SlavesListDatasource = require('./SlavesListDatasource.js');
@@ -33,15 +32,11 @@ cls.startMonitor = function()
     var slaveDatasource = new SlavesListDatasource(this._masterUrl);
     slaveDatasource.start();
 
-    var healthCheckDatasource = new ClusterHealthCheckDatasource(slaveDatasource);
-    if (!DEBUG_MODE) healthCheckDatasource.start();
-
     var buildQueueDatasource = new BuildQueueDatasource(this._masterUrl);
     buildQueueDatasource.start();
 
     var buildVisualizer = new BuildVisualizer(slaveDatasource, buildQueueDatasource);
-    var slaveVisualizer = new SlaveVisualizer(slaveDatasource, healthCheckDatasource, buildVisualizer,
-                                              this._hostAbbrevRegex);
+    var slaveVisualizer = new SlaveVisualizer(slaveDatasource, buildVisualizer, this._hostAbbrevRegex);
 
     // the order of this array matters! dependent visualizations should come after dependees.
     this._startVisualization([buildVisualizer, slaveVisualizer]);
