@@ -176,6 +176,10 @@ pre {
     font-weight: bold;
 }
 
+.tinyText {
+    font-size: 70%;
+}
+
 .buildLabel.idleAttractor {
     fill: #c8c8c8;
 
