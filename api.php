@@ -16,6 +16,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 
 $response = curl_exec($ch);
 
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 $headers = substr($response, 0, $headerSize);
 $body = substr($response, $headerSize);
@@ -31,8 +32,11 @@ foreach ($headers as $header) {
     $headersByName[$headerKey] = $headerValue;
 }
 
+if ($httpCode !== 200) {
+    $body = json_encode(['error' => 'Expected 200 http status but got ' . $httpCode]);
+}
 // Do a dumb version of web browser CORS check.
-if ($headersByName['Access-Control-Allow-Origin'] != $origin) {
+else if ($headersByName['Access-Control-Allow-Origin'] != $origin) {
     $body = json_encode(['error' => 'Request denied due to cross-origin restrictions.']);
 }
 
