@@ -4,10 +4,11 @@ var conf = require('./conf.js');
 var Visualizer = require('./Visualizer.js');
 
 
-function BuildVisualizer(slaveDatasource, buildQueueDatasource)
+function BuildVisualizer(slaveDatasource, buildQueueDatasource, repoNameRegex)
 {
     this._slaveDatasource = slaveDatasource;
     this._buildQueueDatasource = buildQueueDatasource;
+    this._repoNameRegex = repoNameRegex;
 
     this._queuedBuildNodes = [];  // keep track of these separately from this._graphNodes since the queue is not part of the graph
 
@@ -96,6 +97,13 @@ cls.update = function()
             graphNode = graphNodesByBuildId[buildId];
         } else if (buildId in this._buildQueueDatasource.data) {
             // otherwise this is a new graph node
+            var buildData = this._buildQueueDatasource.data[buildId];
+
+            var repoName = '';
+            var matches = (new RegExp(this._repoNameRegex, 'g')).exec(buildData.request_params.url);
+            if (matches && matches.length > 1) {
+                repoName = matches[1];
+            }
             graphNode = {
                 type: 'build',
                 buildId: buildId,
@@ -103,7 +111,10 @@ cls.update = function()
                 wallRepelForce: conf.buildWallRepelForce,
                 x: conf.queuedBuildSize + 5,
                 y: this._height + conf.queuedBuildSize + 5,
-                jobName: this._buildQueueDatasource.data[buildId].request_params.job_name
+                jobName: buildData.request_params.job_name,
+                repoName: repoName,
+                startTime: buildData.state_timestamps.building,
+                shouldUpdateElapsedTime: true
             };
             // search the queued nodes to see if we've already drawn this build, so we can have position continuity
             // todo: is this needed? would this be handled by the above if block?
@@ -157,6 +168,23 @@ cls._updateQueueVisualization = function(newActiveBuildIds)
     this._queuedBuildNodes = nodes;
 };
 
+cls._formatTimeDuration = function(numTotalSeconds) {
+
+    var numHours = Math.floor(numTotalSeconds / 3600);
+    var numMins = Math.floor((numTotalSeconds - numHours * 3600) / 60);
+    var numSecs = numTotalSeconds - numHours * 3600 - numMins * 60;
+
+    return numHours + ':' + cls._zeroPad(numMins) + ':' + cls._zeroPad(numSecs);
+};
+
+cls._zeroPad = function(s) {
+    // Add a leading zero if number is less than 10
+    var padStr = '00';
+    s = '' + s;
+    return padStr.substring(0, padStr.length - s.length) + s;
+};
+
+
 cls._updateSvgElements = function()
 {
     var _this = this;
@@ -188,7 +216,7 @@ cls._updateSvgElements = function()
 
     this._buildLabels = enterSelection
         .append('text')
-        .attr('text-anchor', 'middle')
+        .attr('text-anchor', 'left')
         .attr('class', function(d) { return 'buildLabel ' + (d.extraClass || '') })
         .attr('x', 0)
         .attr('y', 4);
@@ -196,18 +224,48 @@ cls._updateSvgElements = function()
 //    this._buildLabels
 //        .transition().duration(conf.buildTransitionEnterDuration)
 //            .attr('font-size', '1.6em');
+
+    var textLeftEdge = function(d) {return -d.size + 30};
     this._buildLabels
         .append('tspan')
-        .attr('x', 0)
-        .attr('dy', '0em')
+        .attr('x', textLeftEdge)
+        .attr('dy', '-1.5em')
         .text(function(d) {return (d.hideLabel) ? '' : (d.alternateLabel) ? d.alternateLabel : '#' + d.buildId});
     this._buildLabels
         .append('tspan')
         .attr('class', 'buildLabelJobName')
-        .attr('x', 0)
-        .attr('dy', '1.4em')
-        .attr('font-size', '70%')
+        .attr('x', textLeftEdge)
+        .attr('dy', '1.8em')
+        .attr('font-size', '80%')
         .text(function(d) {return (d.hideLabel) ? '' : d.jobName});
+    this._buildLabels
+        .append('tspan')
+        .attr('class', 'repoUrl')
+        .attr('x', textLeftEdge)
+        .attr('dy', '1em')
+        .attr('font-size', '80%')
+        .text(function(d) {return (d.hideLabel) ? '' : d.repoName});
+    this._buildLabels
+        .append('tspan')
+        .attr('class', 'buildTime')
+        .attr('x', textLeftEdge)
+        .attr('dy', '2em')
+        .attr('font-size', '80%')
+        .html(function(d) {
+            if (d.hideLabel) {
+                return '';
+            }
+            // set up an interval to update the time every second
+            var el = d3.select(this);
+            var updateFunc = function() {
+                if (d.shouldUpdateElapsedTime) {
+                    var elapsedTotalSecs = Math.round((new Date().getTime() / 1000) - d.startTime);
+                    el.html('<tspan class="tinyText">Elapsed: </tspan>' + cls._formatTimeDuration(elapsedTotalSecs));
+                    setTimeout(updateFunc, 1000);
+                }
+            };
+            setTimeout(updateFunc, 1000);
+        });
 
     var exitSelection = this._buildGraphicGroups.exit();
     exitSelection
@@ -218,6 +276,11 @@ cls._updateSvgElements = function()
         .transition().duration(conf.buildTransitionExitDuration)
             .attr('class', 'buildGraphicGroup completed')
             .style('fill', 'rgb(166, 216, 84)');
+    exitSelection.selectAll('.buildTime')
+        .text(function(d) {
+            d.shouldUpdateElapsedTime = false;  // this prevents the updating setTimeout loop from going forever
+            return 'Completed!';
+        });
 
     // todo: move queued build graphics into g elements
     this._queuedBuildGraphics = this._queuedBuildGraphics.data(this._queuedBuildNodes, function(d) {return d.buildId});

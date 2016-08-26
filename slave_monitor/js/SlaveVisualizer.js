@@ -4,11 +4,10 @@ var Log = require('./Log.js');
 var Visualizer = require('./Visualizer.js');
 
 
-function SlaveVisualizer(slaveDatasource, healthCheckDatasource, buildVisualizer, hostAbbrevRegex)
+function SlaveVisualizer(slaveDatasource, buildVisualizer, hostAbbrevRegex)
 {
     this._slaveDatasource = slaveDatasource;
     this._buildVisualizer = buildVisualizer;
-    this._healthCheckDatasource = healthCheckDatasource;
     this._hostAbbrevRegex = hostAbbrevRegex;
 
     this._slaveCircles = null;
@@ -87,16 +86,7 @@ cls.update = function()
                 classes: function() {
                     var extraClasses = '';
                     var slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
-                    var slaveIsUnresponsive = _this._healthCheckDatasource.data[this.slaveDatum.id] === false;
-                    var slaveIsResponsive = _this._healthCheckDatasource.data[this.slaveDatum.id] === true;
                     var slaveIsMarkedDead = this.slaveDatum.is_alive === false;
-
-                    if (slaveIsResponsive) {
-                        extraClasses += 'responsive ';
-                    }
-                    else if (slaveIsUnresponsive) {
-                        extraClasses += 'unresponsive ';
-                    }
 
                     if (slaveIsMarkedDead) {
                         extraClasses += 'dead ';
