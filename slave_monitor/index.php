@@ -2,6 +2,9 @@
 <?php
 
 $conf = parse_ini_file('../dashboard.ini', true);
+if ($conf === false) {
+    $conf = parse_ini_file('../dashboard_defaults.ini', true);
+}
 $hostAbbrevRegex = $conf['slave_monitor']['host_abbreviation_regex'];
 $repoNameRegex = $conf['slave_monitor']['repo_name_regex'] ?: '(.*)';
 
