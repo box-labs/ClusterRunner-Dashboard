@@ -7,11 +7,12 @@ var SlavesListDatasource = require('./SlavesListDatasource.js');
 var SlaveVisualizer = require('./SlaveVisualizer.js');
 
 
-function ClusterRunnerSlaveMonitor(containerSelector, masterUrl, hostAbbrevRegex)
+function ClusterRunnerSlaveMonitor(containerSelector, masterUrl, hostAbbrevRegex, repoNameRegex)
 {
     this._masterUrl = masterUrl;
     this._container = d3.select(containerSelector);
     this._hostAbbrevRegex = hostAbbrevRegex;
+    this._repoNameRegex = repoNameRegex;
     this.force = null;
 
     var _this = this;
@@ -35,7 +36,7 @@ cls.startMonitor = function()
     var buildQueueDatasource = new BuildQueueDatasource(this._masterUrl);
     buildQueueDatasource.start();
 
-    var buildVisualizer = new BuildVisualizer(slaveDatasource, buildQueueDatasource);
+    var buildVisualizer = new BuildVisualizer(slaveDatasource, buildQueueDatasource, this._repoNameRegex);
     var slaveVisualizer = new SlaveVisualizer(slaveDatasource, buildVisualizer, this._hostAbbrevRegex);
 
     // the order of this array matters! dependent visualizations should come after dependees.

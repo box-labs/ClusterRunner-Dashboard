@@ -3,6 +3,7 @@
 
 $conf = parse_ini_file('../dashboard.ini', true);
 $hostAbbrevRegex = $conf['slave_monitor']['host_abbreviation_regex'];
+$repoNameRegex = $conf['slave_monitor']['repo_name_regex'] ?: '(.*)';
 
 /** @var $master_url - The url of the master host, including the port (e.g., "cluster-master.box.com:43000") */
 $masterUrl = $_GET['master'] ?: $conf['master_url'];
@@ -38,6 +39,7 @@ $debugMode = $_GET['debug'] == 'true';
         masterUrl = apiProxyUrl + '/' + masterUrl;
 
         var hostAbbrevRegex = '<?php echo $hostAbbrevRegex ?>' || null;
+        var repoNameRegex = '<?php echo $repoNameRegex ?>' || null;
 
         DEBUG_MODE = <?php echo $debugMode ? 'true' : 'false'; ?>;
         Log.setLevel(Log.WARNING);
@@ -46,7 +48,7 @@ $debugMode = $_GET['debug'] == 'true';
             FakeData.beginAutoRepeatingProgression();
         }
 
-        monitor = new ClusterRunnerSlaveMonitor('.dashboard', masterUrl, hostAbbrevRegex);
+        monitor = new ClusterRunnerSlaveMonitor('.dashboard', masterUrl, hostAbbrevRegex, repoNameRegex);
         monitor.startMonitor();
     </script>
 
