@@ -72,6 +72,8 @@ cls.update = function()
             // if we already have a node for this slaveId, just update that object instead of replacing it (the object has extra positioning data that we want to preserve)
             graphNode = graphNodesBySlaveId[slaveId];
             if (graphNode.attractToNode !== attractToNode) {
+                --graphNode.attractToNode.numAttractedSlaves;
+                ++attractToNode.numAttractedSlaves;
                 graphNode.attractToNode = attractToNode;
                 graphStateChanged = true;
             }
@@ -104,6 +106,7 @@ cls.update = function()
                 link: null,
                 attractToNode: attractToNode
             };
+            ++attractToNode.numAttractedSlaves;
         }
         updatedGraphNodesList.push(graphNode);
     }
@@ -130,6 +133,11 @@ cls.update = function()
         if (graphNode.link) {
             graphNode.link.linkLength = graphNode.link.target.linkLength;
             graphNode.link.linkStrength = graphNode.link.target.linkStrength;
+            if (graphNode.attractToNode.numAttractedSlaves == 1) {
+                // try to prevent single-node builds from swimming around
+                graphNode.link.linkLength = (graphNode.link.linkLength || conf.defaultLinkLength) + 15;
+                graphNode.link.linkStrength = 0;
+            }
             graphLinks.push(graphNode.link);
         }
     });

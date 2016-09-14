@@ -89,9 +89,10 @@ pre {
 /* Palette: http://bl.ocks.org/mbostock/5577023 (2nd from last; "Set 2") */
 
 .slaveLabel {
-    font-size: 0.8em;
+    /*font-size: 0.8em;*/
+    font-size: 0.7em;
     /*fill: rgba(255, 255, 255, 0.5);*/
-    fill: rgb(149, 149, 149);
+    fill: rgb(174, 174, 174);
 }
 
 
@@ -116,8 +117,8 @@ pre {
     -webkit-animation: dash 10s linear infinite;
 }
 .slaveCircle.idle {
-    fill: rgb(69, 128, 45);
-    stroke: rgb(69, 128, 45);
+    fill: rgb(52, 105, 44);
+    stroke: rgb(52, 105, 44);
 }
 
 
@@ -128,12 +129,14 @@ pre {
 
 .buildCircle {
     /*fill: rgb(141, 160, 203);*/
-    fill: rgb(41, 39, 39);
+    /*fill: rgb(41, 39, 39);*/
+    fill: rgb(31, 45, 58);
     /*stroke: rgb(80, 95, 127);*/
-    stroke: rgb(130, 181, 216);
+    /*stroke: rgb(130, 181, 216);*/
+    stroke: rgb(31, 120, 193);
     stroke-width: 2;
     /*stroke-dasharray: 62.8;  !* = (2πr/num_segments) = (2π * 100 / 10) *!*/
-    stroke-dasharray: 47.1, 15.7;  /* = (2πr/num_segments) = (2π * 100 / 10) */
+    stroke-dasharray: 47.1, 15.7;  /* = (2πr/num_segments) = (2π * 100 / 40) */
     stroke-dashoffset: 0;
 
     animation: dash 20s linear infinite;
@@ -160,10 +163,12 @@ pre {
 
 .queuedBuildGraphic {
     /*fill: rgb(182, 196, 227);*/
-    stroke: rgb(128, 143, 173);
-    stroke-width: 2.5;
+    fill: rgb(31, 45, 58);
+    stroke: rgb(31, 120, 193);
+    stroke-width: 1;
 
-    stroke-dasharray: 9.42;  /* = (2πr/num_segments) = (2π * 15 / 10) */
+    /*stroke-dasharray: 9.42;  !* = (2πr/num_segments) = (2π * 15 / 10) *!*/
+    stroke-dasharray: 7.07, 2.36;  /* = (2πr/num_segments) = (2π * 15 / 40) */
 }
 
 .queuedBuildGraphic.upNext {

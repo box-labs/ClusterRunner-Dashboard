@@ -44,10 +44,11 @@ cls.init = function(g, force, width, height)
         size: conf.buildSize * 1.2,  // todo: adjust size based on how many idle slaves?
         slaveEmbedAmount: conf.buildSize * 1.2,
         wallRepelForce: conf.buildWallRepelForce,
-        linkLength: 15,
-        linkStrength: 0.1,
+        linkLength: 10,
+        linkStrength: 0.2,
         charge: -350,
-        preventQueueAnimation: true
+        preventQueueAnimation: true,
+        numAttractedSlaves: 0
     };
 
     // save some useful properties
@@ -114,7 +115,8 @@ cls.update = function()
                 jobName: buildData.request_params.job_name,
                 repoName: repoName,
                 startTime: buildData.state_timestamps.building,
-                shouldUpdateElapsedTime: true
+                shouldUpdateElapsedTime: true,
+                numAttractedSlaves: 0
             };
             // search the queued nodes to see if we've already drawn this build, so we can have position continuity
             // todo: is this needed? would this be handled by the above if block?

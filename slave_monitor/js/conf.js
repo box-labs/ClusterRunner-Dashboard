@@ -27,11 +27,11 @@ var conf = {
     defaultSwirlForce: 0.0002,
 
 //    defaultLinkLength: 15,
-    defaultLinkLength: 15,
-    defaultLinkStrength: 0.4,
+    defaultLinkLength: 70,  // this is directly related to slaveEmbedAmount
+    defaultLinkStrength: 1.5,
 
     buildSize: 100,
-    buildCharge: -900,
+    buildCharge: -400,
 
     queuedBuildSize: 15,
 
@@ -49,7 +49,7 @@ var conf = {
     // buildSlaveRepelForce: 6500,
     // buildSlaveRepelForce: 1000,  // setting for high load
 
-    slaveCircleSize: 10,
+    slaveCircleSize: 9,
     slaveWallRepelForce: 600,
     slaveBuildAttractionForce: 0.3
 };
