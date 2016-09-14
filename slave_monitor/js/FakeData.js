@@ -1,70 +1,11 @@
 
 var conf = require('./conf.js');
 
-//var all_urls = [
-//    "cluster1234-host1115.example-cr.gov:43001", "cluster1234-host1116.example-cr.gov:43001",
-//    "cluster1234-host1117.example-cr.gov:43001", "cluster1234-host1119.example-cr.gov:43001",
-//    "cluster1234-host1118.example-cr.gov:43001", "cluster1234-host1120.example-cr.gov:43001",
-//    "cluster1234-host1121.example-cr.gov:43001", "cluster1234-host1123.example-cr.gov:43001",
-//    "cluster1234-host1122.example-cr.gov:43001", "cluster1234-host1124.example-cr.gov:43001",
-//    "cluster1234-host1125.example-cr.gov:43001", "cluster1234-host1126.example-cr.gov:43001",
-//    "cluster1234-host1006.example-cr.gov:43001", "cluster1234-host1007.example-cr.gov:43001",
-//    "cluster1234-host1046.example-cr.gov:43001", "cluster1234-host1112.example-cr.gov:43001",
-//    "cluster1234-host1113.example-cr.gov:43001", "cluster1234-host1052.example-cr.gov:43001",
-//    "cluster1234-host1114.example-cr.gov:43001", "cluster1234-host1087.example-cr.gov:43001",
-//    "cluster1234-host1032.example-cr.gov:43001", "cluster1234-host1024.example-cr.gov:43001",
-//    "cluster1234-host1039.example-cr.gov:43001", "cluster1234-host1028.example-cr.gov:43001",
-//    "cluster1234-host1031.example-cr.gov:43001", "cluster1234-host1025.example-cr.gov:43001",
-//    "cluster1234-host1088.example-cr.gov:43001", "cluster1234-host1027.example-cr.gov:43001",
-//    "cluster1234-host1089.example-cr.gov:43001", "cluster1234-host1090.example-cr.gov:43001",
-//    "cluster1234-host1026.example-cr.gov:43001", "cluster1234-host1030.example-cr.gov:43001",
-//    "cluster1234-host1029.example-cr.gov:43001", "cluster1234-host1038.example-cr.gov:43001",
-//    "cluster1234-host1033.example-cr.gov:43001", "cluster1234-host1034.example-cr.gov:43001",
-//    "cluster1234-host1091.example-cr.gov:43001", "cluster1234-host1092.example-cr.gov:43001",
-//    "cluster1234-host1094.example-cr.gov:43001", "cluster1234-host1036.example-cr.gov:43001",
-//    "cluster1234-host1035.example-cr.gov:43001", "cluster1234-host1037.example-cr.gov:43001",
-//    "cluster1234-host1093.example-cr.gov:43001", "cluster1234-host1050.example-cr.gov:43001",
-//    "cluster1234-host1077.example-cr.gov:43001"
-//];
 
-var all_urls = [
-    "cluster1234-host0001.example-cr.gov:43001", "cluster1234-host0002.example-cr.gov:43001",
-    "cluster1234-host0003.example-cr.gov:43001", "cluster1234-host0004.example-cr.gov:43001",
-    "cluster1234-host0005.example-cr.gov:43001", "cluster1234-host0006.example-cr.gov:43001",
-    "cluster1234-host0007.example-cr.gov:43001", "cluster1234-host0008.example-cr.gov:43001",
-    "cluster1234-host0009.example-cr.gov:43001", "cluster1234-host0010.example-cr.gov:43001",
-    "cluster1234-host0011.example-cr.gov:43001", "cluster1234-host0012.example-cr.gov:43001",
-    "cluster1234-host0013.example-cr.gov:43001", "cluster1234-host0014.example-cr.gov:43001",
-    "cluster1234-host0015.example-cr.gov:43001", "cluster1234-host0016.example-cr.gov:43001",
-    "cluster1234-host0017.example-cr.gov:43001", "cluster1234-host0018.example-cr.gov:43001",
-    "cluster1234-host0019.example-cr.gov:43001", "cluster1234-host0020.example-cr.gov:43001",
-    "cluster1234-host0021.example-cr.gov:43001", "cluster1234-host0022.example-cr.gov:43001",
-    "cluster1234-host0023.example-cr.gov:43001", "cluster1234-host0024.example-cr.gov:43001",
-    "cluster1234-host0025.example-cr.gov:43001", "cluster1234-host0026.example-cr.gov:43001",
-    "cluster1234-host0027.example-cr.gov:43001", "cluster1234-host0028.example-cr.gov:43001",
-    "cluster1234-host0029.example-cr.gov:43001", "cluster1234-host0030.example-cr.gov:43001",
-    "cluster1234-host0031.example-cr.gov:43001", "cluster1234-host0032.example-cr.gov:43001",
-    "cluster1234-host0033.example-cr.gov:43001", "cluster1234-host0034.example-cr.gov:43001",
-    "cluster1234-host0035.example-cr.gov:43001", "cluster1234-host0036.example-cr.gov:43001",
-    "cluster1234-host0037.example-cr.gov:43001", "cluster1234-host0038.example-cr.gov:43001",
-    "cluster1234-host0039.example-cr.gov:43001", "cluster1234-host0040.example-cr.gov:43001",
-    "cluster1234-host0041.example-cr.gov:43001", "cluster1234-host0042.example-cr.gov:43001",
-    "cluster1234-host0043.example-cr.gov:43001", "cluster1234-host0044.example-cr.gov:43001",
-    "cluster1234-host0045.example-cr.gov:43001", "cluster1234-host0046.example-cr.gov:43001",
-    "cluster1234-host0047.example-cr.gov:43001", "cluster1234-host0048.example-cr.gov:43001",
-    "cluster1234-host0049.example-cr.gov:43001", "cluster1234-host0050.example-cr.gov:43001",
-    "cluster1234-host0051.example-cr.gov:43001", "cluster1234-host0052.example-cr.gov:43001",
-    "cluster1234-host0053.example-cr.gov:43001", "cluster1234-host0054.example-cr.gov:43001",
-    "cluster1234-host0055.example-cr.gov:43001", "cluster1234-host0056.example-cr.gov:43001",
-    "cluster1234-host0057.example-cr.gov:43001", "cluster1234-host0058.example-cr.gov:43001",
-    "cluster1234-host0059.example-cr.gov:43001", "cluster1234-host0060.example-cr.gov:43001",
-    "cluster1234-host0061.example-cr.gov:43001", "cluster1234-host0062.example-cr.gov:43001",
-    "cluster1234-host0063.example-cr.gov:43001", "cluster1234-host0064.example-cr.gov:43001",
-    "cluster1234-host0065.example-cr.gov:43001", "cluster1234-host0066.example-cr.gov:43001",
-    "cluster1234-host0067.example-cr.gov:43001", "cluster1234-host0068.example-cr.gov:43001",
-    "cluster1234-host0069.example-cr.gov:43001", "cluster1234-host0070.example-cr.gov:43001",
-    "cluster1234-host0071.example-cr.gov:43001", "cluster1234-host0072.example-cr.gov:43001"
-];
+var all_urls = [];
+for (var i = 0; i < 200; ++i) {
+    all_urls.push('ip-14-121-87-' + i + '.pod.box.net:43001')
+}
 
 var nextBuildNum = 712;
 var buildNumIncrement = 53;
@@ -75,7 +16,10 @@ var slavesList = all_urls.map(function(url, i) {
         current_build_id: null,
         num_executors: 10,
         id: i + 1,
-        num_executors_in_use: 0
+        num_executors_in_use: 0,
+        session_id: '155ea7c1-d85e-449b-b289-5c442132f81e',
+        is_alive: true,
+        is_in_shutdown_mode: false
     };
 });
 
@@ -84,7 +28,7 @@ var exampleJobNames = [
     'Specs2',
     'PHPUnitPerformanceHHVM',
     'QUnit',
-    'PHPUnitHHVM',
+    'PHPUnitHHVM'
 ];
 
 function randomJobName() {
@@ -190,7 +134,10 @@ function markSlavesBusy(slaveIdsToMark, buildId, numBusyExecutors) {
     // mark this build in the queue as BUILDING
     if (buildId !== null) {
         buildQueue.map(function(build) {
-            if (build.id == buildId) build.status = 'BUILDING';
+            if (build.id == buildId) {
+                build.status = 'BUILDING';
+                build.state_timestamps.building = Date.now()/1000;
+            }
         });
     }
 }
