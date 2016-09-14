@@ -37,8 +37,8 @@ var conf = {
 
     queuedBuildSize: 15,
 
-    // buildWallRepelForce: 200,
-    buildWallRepelForce: 5200,  // increased because of higher load
+    buildWallRepelForce: 200,
+    // buildWallRepelForce: 5200,  // setting for high load
     buildGraphicsPosYEnter: 100,  // start at height + 100 so that we animate from offscreen
     buildGraphicsPosYExit: -100,
     buildTransitionEnterDuration: 1000,
@@ -47,8 +47,8 @@ var conf = {
     idleSlaveCharge: 0,
     activeSlaveCharge: 0,
 
-    // buildSlaveRepelForce: 6500,
-    buildSlaveRepelForce: 1000,  // reduced because of higher load
+    buildSlaveRepelForce: 6500,
+    // buildSlaveRepelForce: 1000,  // setting for high load
 
     slaveCircleSize: 10,
     slaveWallRepelForce: 600,
