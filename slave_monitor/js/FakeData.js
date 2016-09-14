@@ -122,7 +122,17 @@ function queueBuild() {
         details: null,
         artifacts: null,
         request_params: {
+            url: "ssh://gitosis@dev-scm-ro.dev.box.net/scm",
             job_name: randomJobName()
+        },
+        state_timestamps: {
+            queued: 1473842415.938,
+            preparing: null,
+            prepared: null,
+            building: null,
+            finished: null,
+            canceled: null,
+            error: null
         }
     };
     buildQueue.push(queuedBuild);
