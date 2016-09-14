@@ -5,13 +5,17 @@ html, body, h2, p {
 	font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
 }
 
+html, body {
+    background-color: #141414;;
+}
+
 pre {
 	font-family: "Consolas", "Panic Sans", "Courier New", monospace;
 }
 
 .clusterRunnerHeader {
 	height: 50px;  /* should be same as .dashboard top */
-	background-color: white;
+	background-color: #292929;
 	border-bottom: double 3px #888;
 	box-sizing: border-box;
 
@@ -19,6 +23,7 @@ pre {
 }
 .clusterRunnerTitle {
 	float: left;
+    color: #e3e3e3;
 }
 .clusterRunnerHeader h2 {
 	margin: 0 0 0 30px;
@@ -53,7 +58,6 @@ pre {
 .clusterRunnerMetadataContent {
 	z-index: 100;
 	position: relative;
-	background-color: #FFF;
 	top: 12px;
 	border: solid #000 1px;
 	border-top: none;
@@ -86,6 +90,8 @@ pre {
 
 .slaveLabel {
     font-size: 0.8em;
+    /*fill: rgba(255, 255, 255, 0.5);*/
+    fill: rgb(149, 149, 149);
 }
 
 
@@ -100,32 +106,38 @@ pre {
     stroke: rgb(177, 5, 2);
 }
 .slaveCircle.busy {
-    fill: rgb(255, 217, 47);
-    stroke: rgb(255, 217, 47);
+    /*fill: rgb(255, 217, 47);*/
+    /*stroke: rgb(255, 217, 47);*/
+    /*fill: none;*/
+    fill: rgb(108, 198, 68);
+    stroke: rgb(108, 198, 68);
 
     animation: dash 10s linear infinite;
     -webkit-animation: dash 10s linear infinite;
 }
 .slaveCircle.idle {
-    fill: #c8c8c8;
-    stroke: #c8c8c8;
+    fill: rgb(69, 128, 45);
+    stroke: rgb(69, 128, 45);
 }
 
 
 .slaveLink {
-    stroke: black;
+    stroke: white;
     stroke-width: 1;
 }
 
 .buildCircle {
-    fill: rgb(141, 160, 203);
-    stroke: rgb(80, 95, 127);
-    stroke-width: 7;
-    stroke-dasharray: 62.8;  /* = (2πr/num_segments) = (2π * 100 / 10) */
+    /*fill: rgb(141, 160, 203);*/
+    fill: rgb(41, 39, 39);
+    /*stroke: rgb(80, 95, 127);*/
+    stroke: rgb(130, 181, 216);
+    stroke-width: 2;
+    /*stroke-dasharray: 62.8;  !* = (2πr/num_segments) = (2π * 100 / 10) *!*/
+    stroke-dasharray: 47.1, 15.7;  /* = (2πr/num_segments) = (2π * 100 / 10) */
     stroke-dashoffset: 0;
 
-    animation: dash 30s linear infinite;
-    -webkit-animation: dash 30s linear infinite;
+    animation: dash 20s linear infinite;
+    -webkit-animation: dash 20s linear infinite;
 }
 @keyframes dash {
     from {stroke-dashoffset: 628}  /* 2 * π * 100 */
@@ -142,12 +154,12 @@ pre {
 }
 
 .buildCircle.idleAttractor {
-    fill: rgba(0, 0, 0, 0);
+    fill: rgba(0, 0, 0, 0);  /* transparent (instead of none) so that you can grab it */
     stroke:none;
 }
 
 .queuedBuildGraphic {
-    fill: rgb(182, 196, 227);
+    /*fill: rgb(182, 196, 227);*/
     stroke: rgb(128, 143, 173);
     stroke-width: 2.5;
 
@@ -162,7 +174,8 @@ pre {
 .queuedBuildLabel {
     font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
     font-weight: 300;
-    fill: rgba(0, 0, 0, 0.4);
+    /*fill: rgba(0, 0, 0, 0.4);*/
+    fill: #D8D9DA;
     font-size: 10px;
 }
 
@@ -170,6 +183,7 @@ pre {
     font-size: 1.6em;
     font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
     font-weight: 300;
+    fill: #D8D9DA;
 }
 
 .buildLabelJobName {

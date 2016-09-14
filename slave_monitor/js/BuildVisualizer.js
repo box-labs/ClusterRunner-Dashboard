@@ -46,7 +46,7 @@ cls.init = function(g, force, width, height)
         wallRepelForce: conf.buildWallRepelForce,
         linkLength: 15,
         linkStrength: 0.1,
-        charge: -100,
+        charge: -350,
         preventQueueAnimation: true
     };
 
@@ -225,7 +225,7 @@ cls._updateSvgElements = function()
 //        .transition().duration(conf.buildTransitionEnterDuration)
 //            .attr('font-size', '1.6em');
 
-    var textLeftEdge = function(d) {return -d.size + 30};
+    var textLeftEdge = function(d) {return -d.size + 40};
     this._buildLabels
         .append('tspan')
         .attr('x', textLeftEdge)
@@ -319,12 +319,12 @@ cls._updateSvgElements = function()
         .remove();
 };
 
+var extraGravity = 0.01;
 cls.tick = function()
 {
     // push special idle attractor node toward the center
-    var extraGravity = 0.01;
-    this._specialIdleNode.x += extraGravity * (this._width / 2 - this._specialIdleNode.x)
-    this._specialIdleNode.y += extraGravity * (this._height / 2 - this._specialIdleNode.y)
+    this._specialIdleNode.x += extraGravity * (this._width / 2 - this._specialIdleNode.x);
+    this._specialIdleNode.y += extraGravity * (this._height / 2 - this._specialIdleNode.y);
 
     // update positions of build graphics
     this._buildGraphicGroups

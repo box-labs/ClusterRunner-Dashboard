@@ -1,11 +1,8 @@
 
 
-// todo: ping slaves individually to make sure they're still responsive
 // todo: indicate progress of builds / subjob completion
 // todo: make finished builds shrink and move off to the side so you can still click on them (change color based on fail/success)
-// todo: show incoming queued builds
 // todo: fix css issues that create scroll bars
-// todo: make idle nodes attract
 
 //DEBUG_MODE = true;
 //Log.setLevel(Log.DEBUG);
@@ -24,7 +21,8 @@ var conf = {
 //    updateFrequencyMs: 1000,
     collisionPadding: 3,
     collisionConstant: 0.5,  // should be between 0 and 1
-    slaveEmbedAmount: 65,
+    // slaveEmbedAmount: 65,
+    slaveEmbedAmount: 25,
     wallPadding: 5,
     defaultSwirlForce: 0.0002,
 
@@ -47,12 +45,13 @@ var conf = {
     idleSlaveCharge: 0,
     activeSlaveCharge: 0,
 
-    buildSlaveRepelForce: 6500,
+    buildSlaveRepelForce: 8500,
+    // buildSlaveRepelForce: 6500,
     // buildSlaveRepelForce: 1000,  // setting for high load
 
     slaveCircleSize: 10,
     slaveWallRepelForce: 600,
-    slaveBuildAttractionForce: 0.1
+    slaveBuildAttractionForce: 0.3
 };
 
 

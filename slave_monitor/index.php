@@ -28,7 +28,7 @@ $debugMode = $_GET['debug'] == 'true';
 <body>
 
     <div class="clusterRunnerHeader">
-        <div class="clusterRunnerTitle"><h2>ClusterRunner Slave Monitor</h2></div>
+        <div class="clusterRunnerTitle"><h2>ClusterRunner</h2></div>
     </div>
 
     <div class="dashboard"></div>
@@ -48,7 +48,10 @@ $debugMode = $_GET['debug'] == 'true';
         Log.setLevel(Log.WARNING);
         if (DEBUG_MODE) {
             Log.setLevel(Log.DEBUG);
-            FakeData.beginAutoRepeatingProgression();
+            //FakeData.beginAutoRepeatingProgression();
+            FakeData.progressDataSequence();
+            FakeData.progressDataSequence();
+            FakeData.progressDataSequence();
         }
 
         monitor = new ClusterRunnerSlaveMonitor('.dashboard', masterUrl, hostAbbrevRegex, repoNameRegex);

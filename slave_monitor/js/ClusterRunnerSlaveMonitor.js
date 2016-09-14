@@ -144,9 +144,9 @@ cls._collide = function(nodes)
                 // calculate the bounding box for detecting collisions between these two nodes
                 var r = nodeA.size + nodeB.size + padding;
                 // make slave nodes embed in their builds
-                if (nodeA.attractToNode == nodeB || nodeB.attractToNode == nodeA)
-//                    r -= conf.slaveEmbedAmount;
+                if (nodeA.attractToNode == nodeB || nodeB.attractToNode == nodeA) {
                     r -= nodeA.slaveEmbedAmount || nodeB.slaveEmbedAmount || conf.slaveEmbedAmount;
+                }
 
                 var nx1 = nodeA.x - r,
                     nx2 = nodeA.x + r,

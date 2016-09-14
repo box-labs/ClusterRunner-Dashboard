@@ -3,7 +3,7 @@ var conf = require('./conf.js');
 
 
 var all_urls = [];
-for (var i = 0; i < 200; ++i) {
+for (var i = 0; i < 40; ++i) {
     all_urls.push('ip-14-121-87-' + i + '.pod.box.net:43001')
 }
 
