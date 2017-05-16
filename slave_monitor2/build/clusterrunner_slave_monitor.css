@@ -1,0 +1,223 @@
+html, body, h2, p {
+	margin: 0;
+	padding: 0;
+	font-size: 11px;
+	font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+}
+
+html, body {
+    background-color: #141414;;
+}
+
+pre {
+	font-family: "Consolas", "Panic Sans", "Courier New", monospace;
+}
+
+.clusterRunnerHeader {
+	height: 50px;  /* should be same as .dashboard top */
+	background-color: #292929;
+	border-bottom: double 3px #888;
+	box-sizing: border-box;
+
+	font-weight: 300;
+}
+.clusterRunnerTitle {
+	float: left;
+    color: #e3e3e3;
+}
+.clusterRunnerHeader h2 {
+	margin: 0 0 0 30px;
+	padding: 10px;
+	font-size: 24px;
+	font-weight: 300;
+}
+
+.clusterRunnerMetadata img {
+	float: left;
+	width: 24px;
+	margin-top: 11px;
+}
+.clusterRunnerMetadata p {
+	float: left;
+	margin: 20px 0 0 3px;
+	font-size: 12px;
+}
+
+.clusterRunnerMetadata {
+	float: left;
+	margin: 0 0 0 15px;
+	overflow: hidden;
+	height: 300px;  /* more than we need, will be limited by max-height */
+	max-height: 46px;
+	transition: max-height 0.4s;
+}
+.clusterRunnerMetadata:hover {
+	max-height: 300px;
+}
+
+.clusterRunnerMetadataContent {
+	z-index: 100;
+	position: relative;
+	top: 12px;
+	border: solid #000 1px;
+	border-top: none;
+	overflow: auto;
+	clear: both;
+}
+.clusterRunnerMetadataContent pre {
+	margin: 8px 18px 12px;
+	line-height: 1.3em;
+	font-size: 12px;
+	font-family: "Lucida Console", "Courier New", "Consolas", monospace;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.dashboard {  /* todo - if any of these are required we should add them programmatically */
+	margin: 0;
+	position: absolute;
+	top: 50px;  /* should be same as .clusterRunnerHeader height */
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+/*********************** Slave Monitor *******************************/
+
+/* Palette: http://bl.ocks.org/mbostock/5577023 (2nd from last; "Set 2") */
+
+.slaveLabel {
+    /*font-size: 0.8em;*/
+    font-size: 0.7em;
+    /*fill: rgba(255, 255, 255, 0.5);*/
+    fill: rgb(174, 174, 174);
+}
+
+
+.slaveCircle {
+    stroke-width: 1;
+    stroke-dasharray: 6.28;
+}
+
+/* dead/busy/idle */
+.slaveCircle.dead {
+    fill: rgb(177, 5, 2);
+    stroke: rgb(177, 5, 2);
+}
+.slaveCircle.busy {
+    /*fill: rgb(255, 217, 47);*/
+    /*stroke: rgb(255, 217, 47);*/
+    /*fill: none;*/
+    fill: rgb(108, 198, 68);
+    stroke: rgb(108, 198, 68);
+
+    animation: dash 10s linear infinite;
+    -webkit-animation: dash 10s linear infinite;
+}
+.slaveCircle.idle {
+    fill: rgb(52, 105, 44);
+    stroke: rgb(52, 105, 44);
+}
+
+
+.slaveLink {
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 1;
+}
+
+.buildCircle {
+    /*fill: rgb(141, 160, 203);*/
+    /*fill: rgb(41, 39, 39);*/
+    fill: rgb(31, 45, 58);
+    /*stroke: rgb(80, 95, 127);*/
+    /*stroke: rgb(130, 181, 216);*/
+    stroke: rgb(31, 120, 193);
+    stroke-width: 2;
+    /*stroke-dasharray: 62.8;  !* = (2πr/num_segments) = (2π * 100 / 10) *!*/
+    stroke-dasharray: 47.1, 15.7;  /* = (2πr/num_segments) = (2π * 100 / 40) */
+    stroke-dashoffset: 0;
+
+    animation: dash 20s linear infinite;
+    -webkit-animation: dash 20s linear infinite;
+}
+@keyframes dash {
+    from {stroke-dashoffset: 628}  /* 2 * π * 100 */
+    to {stroke-dashoffset: 0}
+}
+@-webkit-keyframes dash {
+    from {stroke-dashoffset: 628}
+    to {stroke-dashoffset: 0}
+}
+
+.buildCircle.completed {
+    /*fill: rgb(166, 216, 84);*/  /* this is commented out because it's animated */
+    stroke-width: 0;
+}
+
+.buildCircle.idleAttractor {
+    fill: rgba(0, 0, 0, 0);  /* transparent (instead of none) so that you can grab it */
+    stroke:none;
+}
+
+.queuedBuildGraphic {
+    /*fill: rgb(182, 196, 227);*/
+    fill: rgb(31, 45, 58);
+    stroke: rgb(31, 120, 193);
+    stroke-width: 1;
+
+    /*stroke-dasharray: 9.42;  !* = (2πr/num_segments) = (2π * 15 / 10) *!*/
+    stroke-dasharray: 7.07, 2.36;  /* = (2πr/num_segments) = (2π * 15 / 40) */
+}
+
+.queuedBuildGraphic.upNext {
+    animation: dash 30s linear infinite;  /* todo: this is discontinuous since 94.2 does not go into 628 evenly */
+    -webkit-animation: dash 30s linear infinite;
+}
+
+.queuedBuildLabel {
+    font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    /*fill: rgba(0, 0, 0, 0.4);*/
+    fill: #D8D9DA;
+    font-size: 10px;
+}
+
+.buildLabel {
+    font-size: 1.6em;
+    font-family: "Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    fill: #D8D9DA;
+}
+
+.buildLabelJobName {
+    font-weight: bold;
+}
+
+.tinyText {
+    font-size: 70%;
+}
+
+.buildLabel.idleAttractor {
+    fill: #c8c8c8;
+
+}
+
+.buildLink {
+    stroke: #555;
+    stroke-width: 2;
+}
+
+.errorMessage {
+    background-color: #FFC8BF;
+    font-size: 1.7em;
+    padding: 20px;
+    position: absolute;
+}
+
+.invisible {
+    display: none;
+}
+
+/*********************************************************************/

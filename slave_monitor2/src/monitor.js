@@ -1,7 +1,6 @@
 import * as d3 from "d3";
-// let PIXI = require('pixi.js');
-import 'pixi';
 import * as PIXI from "pixi.js";
+
 
 export default class {
 
