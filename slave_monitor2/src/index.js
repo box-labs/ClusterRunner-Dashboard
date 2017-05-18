@@ -1,42 +1,48 @@
+import * as d3 from 'd3';
 
-import conf from './dashboard_conf';
-import SlaveMonitor from './slave_monitor';
-import Log from './Log';
+import {conf} from './dashboard_conf';
+import {SlaveMonitor} from './slave_monitor';
+import {Log} from './log';
+import {FakeData} from './fake_data';
 
-console.log(conf);
-console.log(SlaveMonitor);
-
-// $conf = parse_ini_file('../dashboard.ini', true);
-// if ($conf === false) {
-//     $conf = parse_ini_file('../dashboard_defaults.ini', true);
-// }
-// $hostAbbrevRegex = $conf['slave_monitor']['host_abbreviation_regex'];
-// $repoNameRegex = $conf['slave_monitor']['repo_name_regex'] ?: '(.*)';
-// /** @var $master_url - The url of the master host, including the port (e.g., "cluster-master.box.com:43000") */
-// $masterUrl = $_GET['master'] ?: $conf['master_url'];
 // $apiProxyUrl = $_SERVER['HTTP_HOST'] . '/api.php';  // proxy requests through this host
-// /** @var $debugMode - Set to "true" to start the dashboard with fake data -- useful for debugging dashboard changes */
-// $debugMode = $_GET['debug'] == 'true';
 
+let urlParams;
+(window.onpopstate = function () {
+    let match,
+        pl     = /\+/g,  // Regex for replacing addition symbol with a space
+        search = /([^&=]+)=?([^&]*)/g,
+        decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+        query  = window.location.search.substring(1);
 
-let masterUrl = conf.master_url;
+    urlParams = {};
+    while (match = search.exec(query))
+       urlParams[decode(match[1])] = decode(match[2]);
+})();
+
+let masterUrl = urlParams.master || conf.master_url;
 if (masterUrl.indexOf(':') < 0) {
     masterUrl += ':43000';  // append default port to master url if not present
 }
 
 let hostAbbrevRegex = conf.slave_monitor.host_abbreviation_regex || null;
-let repoNameRegex = conf.slave_monitor.repo_name_regex || null;
+let repoNameRegex = conf.slave_monitor.repo_name_regex || '(.*)';
 
-let w = window;
-w.DEBUG_MODE = conf.debug;
+window.DEBUG_MODE = urlParams.debug || conf.debug;
 Log.setLevel(Log.WARNING);
-// if (w.DEBUG_MODE) {
-//     Log.setLevel(Log.DEBUG);
-//     //FakeData.beginAutoRepeatingProgression();
-//     FakeData.progressDataSequence();
-//     FakeData.progressDataSequence();
-//     FakeData.progressDataSequence();
-// }
+if (window.DEBUG_MODE) {
+    Log.setLevel(Log.DEBUG);
+    // FakeData.beginAutoRepeatingProgression();
+    FakeData.progressDataSequence();
+    FakeData.progressDataSequence();
+    FakeData.progressDataSequence();
+}
 
+
+window.d3 = d3;
 let monitor = new SlaveMonitor('.dashboard', masterUrl, hostAbbrevRegex, repoNameRegex);
 monitor.startMonitor();
+
+// import art from './art';
+// let a = new art();
+// a.render();

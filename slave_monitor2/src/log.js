@@ -36,5 +36,4 @@ Log.warning = logAtLevel(Log.WARNING, 'WARNING');
 Log.error =     logAtLevel(Log.ERROR, 'ERROR  ');
 Log.raw = function(message) {console.log(message)};
 
-
-module.exports = Log;
+export {Log};

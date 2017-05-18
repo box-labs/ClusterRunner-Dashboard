@@ -21,7 +21,7 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
-    "d3": "<4",
+    "d3": "^4.8.0",
     "phaser-ce": "^2.7.9",
     "pixi.js": "^4.5.1"
   }

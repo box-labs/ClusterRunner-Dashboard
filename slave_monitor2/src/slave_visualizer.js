@@ -1,7 +1,8 @@
+import * as d3 from 'd3';
 
-var conf = require('./conf.js');
-var Log = require('./Log.js');
-var Visualizer = require('./Visualizer.js');
+import {conf} from './conf';
+import {Log} from './log';
+import Visualizer from './base_visualizer';
 
 
 function SlaveVisualizer(slaveDatasource, buildVisualizer, hostAbbrevRegex)
@@ -153,7 +154,9 @@ cls._updateSvgElements = function()
     this._slaveCircles.enter()
         .append('circle')
         .attr('r', function(d) { return d.size; })
-        .call(this._force.drag);
+        .call(this.drag(this._force))
+        ;
+        // .call(this._force.drag);
     // Destroy
     this._slaveCircles.exit()
         .remove();
@@ -165,7 +168,9 @@ cls._updateSvgElements = function()
     // Create
     this._slaveLabels.enter().append('text')
         .attr('class', 'slaveLabel')
-        .call(this._force.drag);
+        .call(this.drag(this._force))
+        ;
+        // .call(this._force.drag);
     // Destroy
     this._slaveLabels.exit()
         .remove();
@@ -220,7 +225,7 @@ cls.tick = function(e)
     }
 
     // make all slave nodes for each build repel each other
-    var slaveRepelForce = conf.buildSlaveRepelForce * e.alpha;
+    var slaveRepelForce = conf.buildSlaveRepelForce * e;
     Object.keys(slaveGroupsByBuild).forEach(function(buildId) {
         var slaves = slaveGroupsByBuild[buildId];
         slaves.map(function(slaveNodeA) {

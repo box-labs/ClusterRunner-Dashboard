@@ -1,9 +1,8 @@
 'use strict'
 
-var conf = require('./conf.js');
-var Visualizer = require('./Visualizer.js');
-
-import Log from './Log';
+import {conf} from './conf';
+import Visualizer from './base_visualizer';
+import {Log} from './log';
 
 function BuildVisualizer(slaveDatasource, buildQueueDatasource, repoNameRegex)
 {
@@ -196,7 +195,9 @@ cls._updateSvgElements = function()
     var enterSelection = this._buildGraphicGroups.enter()
         .insert('g', '.slaveCircle')  // insert before .slaveCircle to show slaves on top
         .attr('class', 'buildGraphicGroup')
-        .call(this._force.drag);
+        .call(this.drag(this._force))
+    ;
+        // .call(this._force.drag);
 
     var buildCircles = enterSelection
         .append('circle')
@@ -214,7 +215,8 @@ cls._updateSvgElements = function()
             .style('fill', this._dummyBuildCircle.style('fill'))
             .style('stroke', this._dummyBuildCircle.style('stroke'))
             .style('stroke-dasharray', this._dummyBuildCircle.style('stroke-dasharray'))
-            .each('end', function() {d3.select(this)
+            // .each('end', function() {d3.select(this)
+            .each(function() {d3.select(this)
                 .attr('class', function(d) { return 'buildCircle ' + (d.extraClass || '') })});  // restore class
 
     this._buildLabels = enterSelection

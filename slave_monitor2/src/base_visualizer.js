@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 
 
 function Visualizer()
@@ -28,7 +29,35 @@ cls.areArraysSame = function(arr1, arr2)
         }
     }
     return true;
-}
+};
+
+cls.drag = function(simulation) {
+
+    function dragstarted(d) {
+        // console.log('dragstarted');
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(d) {
+        // console.log('dragged');
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+        // console.log('dragended');
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+    return d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
+};
 
 var notImplemented = function(methodName) {throw new Error('Method "' + methodName + '" not implemented.')};
 cls.init = function(){notImplemented('init')};

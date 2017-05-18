@@ -1,8 +1,9 @@
+import * as d3 from 'd3';
 
-var conf = require('./conf.js');
-var FakeData = require('./FakeData.js');
-var Log = require('./Log.js');
-var Network = require('./Network.js');
+import {conf} from './conf';
+import {FakeData} from './fake_data';
+import {Log} from './log';
+import {Network} from './network';
 
 
 function BuildQueueDatasource(masterUrl)
@@ -18,10 +19,10 @@ cls.start = function()
 {
     var _this = this;
     function updateData() {
-        _this._network.get(_this._apiUrl, function(apiData) {
-            Log.info('BuildQueueDatasource.updateData()');
+
+        function handleData(apiData) {
+            Log.info('BuildQueueDatasource.handleData()');
             var newData = apiData['queue'];
-            if (DEBUG_MODE) newData = FakeData.getFakeBuildQueue();
 
             // Remove all elements from the current data object
             var existingKeys = Object.keys(_this.data);
@@ -34,12 +35,16 @@ cls.start = function()
                 var build = newData[i];
                 _this.data[build['id']] = build;
             }
+        }
 
-            d3.timer(updateData, conf.updateFrequencyMs);
-        });
-        return true;  // return true so d3.timer does not repeat this call again immediately
+        if (window.DEBUG_MODE) {
+            handleData({queue: FakeData.getFakeBuildQueue()});
+        } else {
+            _this._network.get(_this._apiUrl, handleData);
+        }
     }
     updateData();
+    d3.interval(updateData, conf.updateFrequencyMs);
 };
 
 

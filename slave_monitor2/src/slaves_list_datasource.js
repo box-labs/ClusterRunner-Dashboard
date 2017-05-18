@@ -1,8 +1,9 @@
+import * as d3 from 'd3';
 
-var conf = require('./conf.js');
-var FakeData = require('./FakeData.js');
-var Log = require('./Log.js');
-var Network = require('./Network.js');
+import {conf} from './conf';
+import {FakeData} from './fake_data';
+import {Log} from './log';
+import {Network} from './network';
 
 
 function SlavesListDatasource(masterUrl)
@@ -52,35 +53,31 @@ cls.start = function()
 {
     var _this = this;
     function updateData() {
-        _this._network.get(_this._slaveApiUrl, function(apiData) {
-            Log.info('SlavesListDatasource.updateData()');
-
-            var newData = apiData['slaves'];
-            if (DEBUG_MODE) newData = FakeData.getFakeSlavesList();
-
-            // Remove all elements from the current data object
-//            var existingKeys = Object.keys(_this.data);
-//            for (var k = 0; k < existingKeys.length; k++) {
-//                delete _this.data[existingKeys[k]];
-//            }
+        function handleData(apiData) {
+            Log.info('SlavesListDatasource.handleData()');
+            let newData = apiData['slaves'];
             _this.data = {};
 
             // Add all elements in newData to the existing data object
-            for (var i = 0; i < newData.length; i++) {
-                var slave = newData[i];
+            for (let i = 0; i < newData.length; i++) {
+                let slave = newData[i];
                 // If the slave has been deliberately put into shutdown mode, and is no longer online, then do not render that slave.
                 if (!slave['is_alive'] && slave['is_in_shutdown_mode']) {
                     continue;
                 }
                 _this.data[slave['id']] = slave;
             }
+        }
 
-            d3.timer(updateData, conf.updateFrequencyMs);
-        });
-        return true;  // return true so d3.timer does not repeat this call again immediately
+        if (window.DEBUG_MODE) {
+            handleData({slaves: FakeData.getFakeSlavesList()});
+        } else {
+            _this._network.get(_this._slaveApiUrl, handleData);
+        }
     }
     updateData();
+    d3.interval(updateData, conf.updateFrequencyMs);
 };
 
 
-module.exports = SlavesListDatasource;
+export {SlavesListDatasource};

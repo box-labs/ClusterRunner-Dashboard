@@ -276,10 +276,7 @@ function setProgressionIndex(newVal) {
 }
 
 function beginAutoRepeatingProgression() {
-    progressDataSequence();
-    if (shouldAutoRepeat)
-        d3.timer(beginAutoRepeatingProgression, conf.updateFrequencyMs);
-    return true;
+    d3.interval(progressDataSequence, conf.updateFrequencyMs);
 }
 
 function getFakeSlavesList() {
@@ -290,10 +287,12 @@ function getFakeBuildQueue() {
     return buildQueue;
 }
 
-module.exports.progressDataSequence = progressDataSequence;
-module.exports.beginAutoRepeatingProgression = beginAutoRepeatingProgression;
-module.exports.setAutoProgress = setAutoProgress;
-module.exports.getFakeSlavesList = getFakeSlavesList;
-module.exports.getFakeBuildQueue = getFakeBuildQueue;
-module.exports.toggleAll = toggleAll;
-module.exports.setProgressionIndex = setProgressionIndex;
+let FakeData = {};
+FakeData.progressDataSequence = progressDataSequence;
+FakeData.beginAutoRepeatingProgression = beginAutoRepeatingProgression;
+FakeData.setAutoProgress = setAutoProgress;
+FakeData.getFakeSlavesList = getFakeSlavesList;
+FakeData.getFakeBuildQueue = getFakeBuildQueue;
+FakeData.toggleAll = toggleAll;
+FakeData.setProgressionIndex = setProgressionIndex;
+export {FakeData};

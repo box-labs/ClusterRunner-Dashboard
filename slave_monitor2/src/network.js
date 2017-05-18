@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import Log from './Log';
+import Log from './log';
 
 
 function Network() {}
@@ -35,5 +35,4 @@ cls._executeErrorCallback = function(url, apiError)
     }
 };
 
-
-module.exports = Network;
+export {Network};
