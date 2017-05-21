@@ -17,7 +17,7 @@ class SlaveMonitor {
         this._hostAbbrevRegex = hostAbbrevRegex;
         this._repoNameRegex = repoNameRegex;
         this.force = null;
-        var _this = this;
+        let _this = this;
         Network.setErrorCallback(function(url, apiError) {
             // todo: this still stops execution -- should just have it show error until next successful call?
             Log.raw(apiError);
@@ -30,20 +30,20 @@ class SlaveMonitor {
     }
 
     startMonitor() {
-        var slaveDatasource = new SlavesListDatasource(this._masterUrl);
+        let slaveDatasource = new SlavesListDatasource(this._masterUrl);
         slaveDatasource.start();
-        var buildQueueDatasource = new BuildQueueDatasource(this._masterUrl);
+        let buildQueueDatasource = new BuildQueueDatasource(this._masterUrl);
         buildQueueDatasource.start();
-        var buildVisualizer = new BuildVisualizer(slaveDatasource, buildQueueDatasource, this._repoNameRegex);
-        var slaveVisualizer = new SlaveVisualizer(slaveDatasource, buildVisualizer, this._hostAbbrevRegex);
+        let buildVisualizer = new BuildVisualizer(slaveDatasource, buildQueueDatasource, this._repoNameRegex);
+        let slaveVisualizer = new SlaveVisualizer(slaveDatasource, buildVisualizer, this._hostAbbrevRegex);
         // the order of this array matters! dependent visualizations should come after dependees.
         this._startVisualization([buildVisualizer, slaveVisualizer]);
     };
 
     _startVisualization(visualizers) {
         let _this = this;
-        conf.width = this._getNumericalStyleAttribute(this._container, 'width');
-        conf.height = this._getNumericalStyleAttribute(this._container, 'height');
+        conf.width = _getNumericalStyleAttribute(this._container, 'width');
+        conf.height = _getNumericalStyleAttribute(this._container, 'height');
         Log.info(`w:${conf.width}, h:${conf.height}`);
         let g = this._container.append('svg')
             .attr('width', conf.width)
@@ -78,7 +78,7 @@ class SlaveMonitor {
             // .on("tick", ticked)
             .on('tick', function() {
                 // let alpha = 0.01;
-                // var nodes = [];
+                // let nodes = [];
                 // visualizers.map(function(visualizer) {
                 //     nodes = nodes.concat(visualizer.getNodes());
                 // });
@@ -94,8 +94,8 @@ class SlaveMonitor {
 
         function update() {
             setTimeout(update, conf.updateFrequencyMs);
-            var nodes = [], links = [];
-            var graphStateChanged = false;
+            let nodes = [], links = [];
+            let graphStateChanged = false;
             visualizers.forEach(function(visualizer) {
                 graphStateChanged = visualizer.update() || graphStateChanged;
                 nodes = nodes.concat(visualizer.getNodes());
@@ -131,27 +131,27 @@ class SlaveMonitor {
         // do collision detection between all nodes. use a quadtree for efficient filtering.
         // most of the below implementation is stolen from d3 examples, with minor edits.
         // see http://bl.ocks.org/mbostock/3231298
-        var quadtree = d3.geom.quadtree(nodes);
-        var padding = conf.collisionPadding;
-        var collisionConstant = conf.collisionConstant;
+        let quadtree = d3.geom.quadtree(nodes);
+        let padding = conf.collisionPadding;
+        let collisionConstant = conf.collisionConstant;
         nodes.map(function(nodeA) {
             quadtree.visit(function(quad, x1, y1, x2, y2) {
-                var nodeB = quad.point;
-                var shouldVisitChildNode = true;
+                let nodeB = quad.point;
+                let shouldVisitChildNode = true;
                 if (nodeB && (nodeB !== nodeA)) {
                     // calculate the bounding box for detecting collisions between these two nodes
-                    var r = nodeA.size + nodeB.size + padding;
+                    let r = nodeA.size + nodeB.size + padding;
                     // make slave nodes embed in their builds
-                    if (nodeA.attractToNode == nodeB || nodeB.attractToNode == nodeA) {
+                    if (nodeA.attractToNode === nodeB || nodeB.attractToNode === nodeA) {
                         r -= nodeA.slaveEmbedAmount || nodeB.slaveEmbedAmount || conf.slaveEmbedAmount;
                     }
-                    var nx1 = nodeA.x - r,
+                    let nx1 = nodeA.x - r,
                         nx2 = nodeA.x + r,
                         ny1 = nodeA.y - r,
                         ny2 = nodeA.y + r;
                     // if we're outside the bounding box we don't need to visit any child nodes
                     shouldVisitChildNode = x1 <= nx2 && x2 >= nx1 && y1 <= ny2 && y2 >= ny1;
-                    var x = nodeA.x - nodeB.x,
+                    let x = nodeA.x - nodeB.x,
                         y = nodeA.y - nodeB.y,
                         l = Math.sqrt(x * x + y * y),  //
                         t;
@@ -160,11 +160,11 @@ class SlaveMonitor {
                         x *= t;
                         y *= t;
                         // don't change build position when slaves collide with builds (prevents build kickback on eject)
-                        if (nodeA.type == 'slave' || nodeA.type == nodeB.type) {
+                        if (nodeA.type === 'slave' || nodeA.type === nodeB.type) {
                             nodeA.x -= x;
                             nodeA.y -= y;
                         }
-                        if (nodeB.type == 'slave' || nodeB.type == nodeA.type) {
+                        if (nodeB.type === 'slave' || nodeB.type === nodeA.type) {
                             nodeB.x += x;
                             nodeB.y += y;
                         }
@@ -178,8 +178,8 @@ class SlaveMonitor {
 
     _repelWalls(nodes, alpha, width, height) {
         nodes.map(function(node) {
-            var wallRepelForce = node.wallRepelForce * alpha;
-            var wallPadding = conf.wallPadding;
+            let wallRepelForce = node.wallRepelForce * alpha;
+            let wallPadding = conf.wallPadding;
             // collision detection on walls
             node.x = Math.min(node.x, width - wallPadding);
             node.y = Math.min(node.y, height - wallPadding);
@@ -197,21 +197,21 @@ class SlaveMonitor {
         if (conf.features.swirl) {
             force.resume();
             nodes.map(function(node) {
-                var swirlForce = (node.swirlForce || conf.defaultSwirlForce) * alpha;
-                var swirlCx = width / 2;
-                var swirlCy = height / 2;
-                var dx = node.x - swirlCx;
-                var dy = node.y - swirlCy;
+                let swirlForce = (node.swirlForce || conf.defaultSwirlForce) * alpha;
+                let swirlCx = width / 2;
+                let swirlCy = height / 2;
+                let dx = node.x - swirlCx;
+                let dy = node.y - swirlCy;
                 node.x -= swirlForce * -dy;
                 node.y -= swirlForce * dx;
             });
         }
     }
+}
 
-    _getNumericalStyleAttribute(element, attributeName) {
-        var stringAttrValue = element.style(attributeName);
-        return Number(stringAttrValue.substring(0, stringAttrValue.length - 2));
-    }
+function _getNumericalStyleAttribute(element, attributeName) {
+    let stringAttrValue = element.style(attributeName);
+    return Number(stringAttrValue.substring(0, stringAttrValue.length - 2));
 }
 
 export {SlaveMonitor};
