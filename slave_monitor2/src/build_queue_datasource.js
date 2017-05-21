@@ -21,7 +21,7 @@ cls.start = function()
     function updateData() {
 
         function handleData(apiData) {
-            Log.info('BuildQueueDatasource.handleData()');
+            // Log.info('BuildQueueDatasource.handleData()');
             var newData = apiData['queue'];
 
             // Remove all elements from the current data object

@@ -29,7 +29,8 @@ let hostAbbrevRegex = conf.slave_monitor.host_abbreviation_regex || null;
 let repoNameRegex = conf.slave_monitor.repo_name_regex || '(.*)';
 
 window.DEBUG_MODE = urlParams.debug || conf.debug;
-Log.setLevel(Log.WARNING);
+Log.setLevel(Log.DEBUG);
+// Log.setLevel(Log.WARNING);
 if (window.DEBUG_MODE) {
     Log.setLevel(Log.DEBUG);
     // FakeData.beginAutoRepeatingProgression();

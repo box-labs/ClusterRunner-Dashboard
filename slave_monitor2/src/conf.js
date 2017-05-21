@@ -12,7 +12,7 @@ var conf = {
     width: null,
     features: {
         swirl: false,
-        drawSlaveLinks: false
+        drawSlaveLinks: true
     },
 
     gravity: 0.004,

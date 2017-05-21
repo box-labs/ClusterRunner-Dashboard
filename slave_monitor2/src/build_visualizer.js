@@ -48,7 +48,8 @@ cls.init = function(g, force, width, height)
         linkStrength: 0.2,
         charge: -350,
         preventQueueAnimation: true,
-        numAttractedSlaves: 0
+        numAttractedSlaves: 0,
+        id: "idle"
     };
 
     // save some useful properties
@@ -59,7 +60,7 @@ cls.init = function(g, force, width, height)
 
 cls.update = function()
 {
-    Log.info('BuildVisualizer.update()');
+    // Log.info('BuildVisualizer.update()');
     // Create or remove any nodes or links based on the current datasource data, then update svg representations.
     var _this = this;
     var graphStateChanged = false;
@@ -189,20 +190,20 @@ cls._zeroPad = function(s) {
 
 cls._updateSvgElements = function()
 {
-    var _this = this;
+    let _this = this;
 
     this._buildGraphicGroups = this._buildGraphicGroups.data(this._graphNodes, function(d) {return d.buildId});
-    var enterSelection = this._buildGraphicGroups.enter()
+    let enterSelection = this._buildGraphicGroups.enter()
         .insert('g', '.slaveCircle')  // insert before .slaveCircle to show slaves on top
         .attr('class', 'buildGraphicGroup')
         .call(this.drag(this._force))
     ;
-        // .call(this._force.drag);
 
-    var buildCircles = enterSelection
+    let buildCircles = enterSelection
         .append('circle')
         .attr('class', function(d) { return 'buildCircle ' + (d.extraClass || '') })
         .attr('r', function(d) { return d.size; });
+
     buildCircles.filter(function(d) {return !d.preventQueueAnimation})
         .attr('class', '')  // remove class so we can animate properties
         .style('stroke-width', this._dummyQueuedBuildGraphic.style('stroke-width'))
@@ -230,7 +231,7 @@ cls._updateSvgElements = function()
 //        .transition().duration(conf.buildTransitionEnterDuration)
 //            .attr('font-size', '1.6em');
 
-    var textLeftEdge = function(d) {return -d.size + 40};
+    let textLeftEdge = function(d) {return -d.size + 40};
     this._buildLabels
         .append('tspan')
         .attr('x', textLeftEdge)
@@ -287,6 +288,8 @@ cls._updateSvgElements = function()
             return 'Completed!';
         });
 
+    this._buildGraphicGroups = enterSelection.merge(this._buildGraphicGroups);
+
     // todo: move queued build graphics into g elements
     this._queuedBuildGraphics = this._queuedBuildGraphics.data(this._queuedBuildNodes, function(d) {return d.buildId});
     this._queuedBuildGraphics
@@ -294,34 +297,45 @@ cls._updateSvgElements = function()
         .transition().duration(300)
             .attr('cx', function(d) {d.x = (conf.queuedBuildSize + 5); return d.x;})
             .attr('cy', function(d, i) {d.y = (2 * i + 1) * (conf.queuedBuildSize + 5); return d.y});
+    // enterSelection = this._queuedBuildGraphics.enter();
+    // enterSelection.append('circle')
     this._queuedBuildGraphics.enter().append('circle')
         // .attr('class', function(d, i) { return 'queuedBuildGraphic' + (i === 0 ? ' upNext' : '')})  // make the top queued build spin
         .attr('class', 'queuedBuildGraphic')
         .attr('r', conf.queuedBuildSize)
         .attr('cx', function(d) {d.x = conf.queuedBuildSize + 5; return d.x;})
         .attr('cy', function(d, i) {return _this._height + (2 * i + 1) * (conf.queuedBuildSize + 5)})
+    // ;
+    // enterSelection
         .transition().duration(1000)
             .delay(function(d, i) {return 150 * i})  // stagger animating new builds entering the queue
             .attr('cy', function(d, i) {d.y = (2 * i + 1) * (conf.queuedBuildSize + 5); return d.y;});  // animate upward from offscreen
     this._queuedBuildGraphics.exit()
         .remove();  // just remove this element -- this._buildGraphicGroups creates a new element in its place
+    // this._queuedBuildGraphics = enterSelection.merge(this._queuedBuildGraphics);
+
 
     this._queuedBuildLabels = this._queuedBuildLabels.data(this._queuedBuildNodes, function(d) {return d.buildId});
     this._queuedBuildLabels
         .transition().duration(300)
             .attr('x', conf.queuedBuildSize + 5)
             .attr('y', function(d, i) {return (2 * i + 1) * (conf.queuedBuildSize + 5) + 4});
-    this._queuedBuildLabels.enter().append('text')
+    enterSelection = this._queuedBuildLabels.enter().append('text')
         .attr('class', 'queuedBuildLabel')
         .attr('text-anchor', 'middle')
         .attr('x', conf.queuedBuildSize + 5)
         .attr('y', function(d, i) {return _this._height + (2 * i + 1) * (conf.queuedBuildSize + 5) + 4})
         .text(function(d) {return '' + d.buildId})
+    // ;
+    // enterSelection
         .transition().duration(1000)
             .delay(function(d, i) {return 150 * i})
             .attr('y', function(d, i) {return (2 * i + 1) * (conf.queuedBuildSize + 5) + 4});  // animate upward from offscreen
     this._queuedBuildLabels.exit()
         .remove();
+    // this._queuedBuildLabels = enterSelection.merge(this._queuedBuildLabels);
+
+
 };
 
 var extraGravity = 0.01;

@@ -54,7 +54,7 @@ cls.start = function()
     var _this = this;
     function updateData() {
         function handleData(apiData) {
-            Log.info('SlavesListDatasource.handleData()');
+            // Log.info('SlavesListDatasource.handleData()');
             let newData = apiData['slaves'];
             _this.data = {};
 

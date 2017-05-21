@@ -24,6 +24,7 @@ var cls = SlaveVisualizer.prototype;
 
 cls.init = function(g, force, width, height)
 {
+    this._g = g;
     this._slaveCircles = g.selectAll('.slaveCircle');
     this._slaveLabels = g.selectAll('.slaveLabel');
     this._slaveToBuildLinks = g.selectAll('.slaveToBuildLinks');
@@ -39,7 +40,7 @@ cls.update = function()
     // The reason is that the force directed graph stores position data on the existing objects, and the physics tick
     // occurs more frequently than this update method is called. If we replace a node object with a new one, even if
     // they have the exact same creation properties, they will not have the same positioning data.
-    Log.info('SlaveVisualizer.update()');
+    // Log.debug('SlaveVisualizer.update()');
     var graphStateChanged = false;
 
     // Use the buildVisualizer to create a map from buildId to build graph node
@@ -150,68 +151,69 @@ cls.update = function()
 
 cls._updateSvgElements = function()
 {
+    let hostAbbrevRegex = this._hostAbbrevRegex;
+
     this._slaveCircles = this._slaveCircles.data(this._graphNodes, function(d) {return d.slaveDatum['url']});
-    this._slaveCircles.enter()
-        .append('circle')
-        .attr('r', function(d) { return d.size; })
-        .call(this.drag(this._force))
-        ;
-        // .call(this._force.drag);
-    // Destroy
-    this._slaveCircles.exit()
+
+    this._slaveCircles.exit()  // Destroy
         .remove();
-    // Update
-    this._slaveCircles
-        .attr('class', function(d) { return d.classes(); });
+    this._slaveCircles = this._slaveCircles
+        .enter()  // Create
+            .append('circle')
+            .attr('r', function(d) { return d.size; })
+            .call(this.drag(this._force))
+        .merge(this._slaveCircles)  // Create + Update
+            .attr('class', function(d) { return d.classes(); })
+
+        ;
 
     this._slaveLabels = this._slaveLabels.data(this._graphNodes, function(d) {return d.slaveDatum['url']});
-    // Create
-    this._slaveLabels.enter().append('text')
-        .attr('class', 'slaveLabel')
-        .call(this.drag(this._force))
-        ;
-        // .call(this._force.drag);
-    // Destroy
-    this._slaveLabels.exit()
+
+    this._slaveLabels.exit()  // Destroy
         .remove();
-    // Update
-    var hostAbbrevRegex = this._hostAbbrevRegex;
-    this._slaveLabels.text(function(d) {
-        var slaveUrl = d.slaveDatum['url'];
+    let enterSelection = this._slaveLabels
+        .enter()  // Create
+            .append('text')
+            .attr('class', 'slaveLabel')
+            .text(function(d) {
+                let slaveUrl = d.slaveDatum['url'];
 
-        // generate an abbreviated hostname from the dashboard.ini conf value
-        var matches = (new RegExp(hostAbbrevRegex, 'g')).exec(slaveUrl);
-        if (matches && matches.length > 1) {
-            return matches[1];
-        }
+                // generate an abbreviated hostname from the dashboard.ini conf value
+                let matches = (new RegExp(hostAbbrevRegex, 'g')).exec(slaveUrl);
+                if (matches && matches.length > 1) {
+                    return matches[1];
+                }
 
-        // if no conf value specified, extract the last numerical sequence before the port number (if any)
-        matches = /(\d+)[\D]*:\d+$/.exec(slaveUrl);
-        if (matches && matches.length > 1) {
-            return matches[1];
-        }
+                // if no conf value specified, extract the last numerical sequence before the port number (if any)
+                matches = /(\d+)[\D]*:\d+$/.exec(slaveUrl);
+                if (matches && matches.length > 1) {
+                    return matches[1];
+                }
 
-        // if still no match, just abbreviate the hostname
-        return slaveUrl.substring(0, 7) + '...';
-    });
+                // if still no match, just abbreviate the hostname
+                return slaveUrl.substring(0, 7) + '...';
+            });
+
+    this._slaveLabels = enterSelection.merge(this._slaveLabels);
 
     if (conf.features.drawSlaveLinks) {
-        this._slaveToBuildLinks = this._slaveToBuildLinks.data(this._graphLinks, function(d) {return d.source.slaveDatum['url']});
-        this._slaveToBuildLinks.enter().append('line')
+        let slaveToBuildLinks = this._g.selectAll('.slaveLink')
+            .data(this._graphLinks, function(d) {return d.source.slaveDatum['url']});
+        slaveToBuildLinks.exit().remove();
+        slaveToBuildLinks.enter().append('line')
             .attr('class', 'slaveLink');
-        this._slaveToBuildLinks.exit().remove();
     } else {
-        this._slaveToBuildLinks = this._slaveToBuildLinks.data([]);
-        this._slaveToBuildLinks.exit().remove();
+        let slaveToBuildLinks = this._g.selectAll('.slaveLink').data([]);
+        slaveToBuildLinks.exit().remove();
     }
 };
 
 var counter = 0;
 /**
  * Update the positions of SVG elements managed by this visualizer.
- * @param e
+ * @param alpha
  */
-cls.tick = function(e)
+cls.tick = function(alpha)
 {
     // partition slave nodes into groups based on build
     var slaveGroupsByBuild = {};
@@ -223,9 +225,8 @@ cls.tick = function(e)
         }
         slaveGroupsByBuild[buildNode.buildId].push(link.source);
     }
-
     // make all slave nodes for each build repel each other
-    var slaveRepelForce = conf.buildSlaveRepelForce * e;
+    var slaveRepelForce = conf.buildSlaveRepelForce * alpha;
     Object.keys(slaveGroupsByBuild).forEach(function(buildId) {
         var slaves = slaveGroupsByBuild[buildId];
         slaves.map(function(slaveNodeA) {
@@ -245,7 +246,6 @@ cls.tick = function(e)
                 slaveNodeA.y -= dy * f / d;
             })});
     });
-
     // update positions of svg circles
     this._slaveCircles
         .attr('cx', function(d) { return d.x; })
@@ -259,7 +259,7 @@ cls.tick = function(e)
 
     if (conf.features.drawSlaveLinks) {
         // update positions of svg lines
-        this._slaveToBuildLinks
+        this._g.selectAll('.slaveLink')
             .attr('x1', function(d) { return d.source.x; })
             .attr('x1', function(d) { return d.source.x; })
             .attr('y1', function(d) { return d.source.y; })
