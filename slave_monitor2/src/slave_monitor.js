@@ -53,8 +53,8 @@ class SlaveMonitor {
         this.force = d3.forceSimulation();
 
         _this.force
-            .force('centerX', d3.forceX(conf.width / 2))
-            .force('centerY', d3.forceY(conf.height / 2))
+            .force('centerX', d3.forceX(conf.width / 2).strength(conf.gravity))
+            .force('centerY', d3.forceY(conf.height / 2).strength(conf.gravity))
             // .force('charge', d3.forceManyBody().strength(-1000))
             .force('charge', d3.forceManyBody().strength(function(d) {
                 if (d.type === 'slave') {
@@ -77,16 +77,16 @@ class SlaveMonitor {
             )
             // .on("tick", ticked)
             .on('tick', function() {
-                // let alpha = 0.01;
-                // let nodes = [];
-                // visualizers.map(function(visualizer) {
-                //     nodes = nodes.concat(visualizer.getNodes());
-                // });
-                // _this._swirl(nodes, _this.force, e.alpha, conf.width, conf.height);
-                // _this._repelWalls(nodes, alpha, conf.width, conf.height);
-                // _this._collide(nodes);
+                let alpha = _this.force.alpha();
+                let nodes = [];
                 visualizers.map(function(visualizer) {
-                    visualizer.tick(_this.force.alpha())
+                    nodes = nodes.concat(visualizer.getNodes());
+                });
+                // _this._swirl(nodes, _this.force, e.alpha, conf.width, conf.height);
+                _this._repelWalls(nodes, alpha, conf.width, conf.height);
+                _this._collide(nodes);
+                visualizers.map(function(visualizer) {
+                    visualizer.tick(alpha)
                 });
             })
         ;
@@ -102,20 +102,15 @@ class SlaveMonitor {
                 links = links.concat(visualizer.getLinks());
             });
 
-            // nodes.forEach(function(node) {
-            //     // Log.warning(`Node [${node.x}, ${node.y}]`);
-            //     console.log(node);
-            // });
             //d3 removes all existing click handlers on an element before adding a
             // new one. https://github.com/mbostock/d3/wiki/Selections#on
-            // d3.selectAll('.slaveCircle').on('click', function(e, i) {
-            //     window.open('http://' + e.slaveDatum.url + '/v1', '');
-            // });
+            d3.selectAll('.slaveCircle').on('click', function(e, i) {
+                window.open('http://' + e.slaveDatum.url + '/v1', '');
+            });
             if (graphStateChanged) {
-                Log.info('graphStateChanged');
                 _this.force.nodes(nodes);
                 _this.force.force('link').links(links);
-                // _this.force.start();
+                _this.force.alpha(1);
                 _this.force.restart();
             }
         }
@@ -126,17 +121,17 @@ class SlaveMonitor {
         });
         setTimeout(update, 1000);  // initial delay to give data sources a chance to update
     }
-
     _collide(nodes) {
         // do collision detection between all nodes. use a quadtree for efficient filtering.
         // most of the below implementation is stolen from d3 examples, with minor edits.
         // see http://bl.ocks.org/mbostock/3231298
-        let quadtree = d3.geom.quadtree(nodes);
+        let quadtree = d3.quadtree(nodes, function(d){return d.x;}, function(d){return d.y;});
+        // let quadtree = d3.quadtree(nodes);
         let padding = conf.collisionPadding;
         let collisionConstant = conf.collisionConstant;
         nodes.map(function(nodeA) {
             quadtree.visit(function(quad, x1, y1, x2, y2) {
-                let nodeB = quad.point;
+                let nodeB = quad.data;
                 let shouldVisitChildNode = true;
                 if (nodeB && (nodeB !== nodeA)) {
                     // calculate the bounding box for detecting collisions between these two nodes

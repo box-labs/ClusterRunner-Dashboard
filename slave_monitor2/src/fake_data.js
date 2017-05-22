@@ -1,16 +1,17 @@
 
-var conf = require('./conf.js');
+import * as d3 from 'd3';
+import {conf} from './conf';
 
 
-var all_urls = [];
-for (var i = 0; i < 40; ++i) {
+let all_urls = [];
+for (let i = 0; i < 40; ++i) {
     all_urls.push('ip-14-121-87-' + i + '.pod.box.net:43001')
 }
 
-var nextBuildNum = 712;
-var buildNumIncrement = 53;
+let nextBuildNum = 712;
+let buildNumIncrement = 53;
 
-var slavesList = all_urls.map(function(url, i) {
+let slavesList = all_urls.map(function(url, i) {
     return {
         url: url,
         current_build_id: null,
@@ -23,7 +24,7 @@ var slavesList = all_urls.map(function(url, i) {
     };
 });
 
-var exampleJobNames = [
+let exampleJobNames = [
     'PHPUnit',
     'Specs2',
     'PHPUnitPerformanceHHVM',
@@ -35,7 +36,7 @@ function randomJobName() {
     return exampleJobNames[Math.floor(Math.random() * exampleJobNames.length)];
 }
 
-var buildQueue = [
+let buildQueue = [
     {  // a fake error build that should be ignored (and actually we should make CR remove this from the queue)
         failed_atoms: null,
         id: 3,
@@ -53,9 +54,9 @@ var buildQueue = [
 ];
 
 function queueBuild() {
-    var buildId = nextBuildNum;
+    let buildId = nextBuildNum;
     nextBuildNum += buildNumIncrement;
-    var queuedBuild = {
+    let queuedBuild = {
         failed_atoms: null,
         id: buildId,
         num_atoms: null,
@@ -81,7 +82,7 @@ function queueBuild() {
     };
     buildQueue.push(queuedBuild);
     return buildId;
-};
+}
 
 function finishBuild(buildId) {
     // mark all its slaves idle and remove from the queue
@@ -91,14 +92,14 @@ function finishBuild(buildId) {
 
 
 function clone(oldObj) {
-    var newObj = {};
+    let newObj = {};
     Object.keys(oldObj).forEach(function(key) {
         newObj[key] = oldObj[key];
     });
     return newObj;
 }
 
-var hiddenSlaves = [];
+let hiddenSlaves = [];
 
 function cloneSlavesList() {
     slavesList = slavesList
@@ -123,9 +124,9 @@ function resetAllSlavesToIdle() {
 }
 
 function markSlavesBusy(slaveIdsToMark, buildId, numBusyExecutors) {
-    numBusyExecutors = typeof numBusyExecutors == 'undefined' ? 10 : numBusyExecutors;  // default value
+    numBusyExecutors = typeof numBusyExecutors === 'undefined' ? 10 : numBusyExecutors;  // default value
     slavesList
-        .filter(function(datum) {return slaveIdsToMark.indexOf(datum.id) != -1})
+        .filter(function(datum) {return slaveIdsToMark.indexOf(datum.id) !== -1})
         .map(function(datum) {
             datum.num_executors_in_use = numBusyExecutors;
             datum.current_build_id = buildId;
@@ -134,7 +135,7 @@ function markSlavesBusy(slaveIdsToMark, buildId, numBusyExecutors) {
     // mark this build in the queue as BUILDING
     if (buildId !== null) {
         buildQueue.map(function(build) {
-            if (build.id == buildId) {
+            if (build.id === buildId) {
                 build.status = 'BUILDING';
                 build.state_timestamps.building = Date.now()/1000;
             }
@@ -146,18 +147,18 @@ function markSlavesIdle(slaveIdsToMark) {
     markSlavesBusy(slaveIdsToMark, null, 0);
 }
 
-var tmpSlaveList = [];
+let tmpSlaveList = [];
 function toggleSlaveList() {
     cloneSlavesList();
-    var temp = slavesList;
+    let temp = slavesList;
     slavesList = tmpSlaveList;
     tmpSlaveList = temp;
 }
 
-var tmpBuildQueue = [];
+let tmpBuildQueue = [];
 function toggleBuildQueue() {
     cloneBuildQueue();
-    var temp = buildQueue;
+    let temp = buildQueue;
     buildQueue = tmpBuildQueue;
     tmpBuildQueue = temp;
 }
@@ -168,8 +169,8 @@ function toggleAll() {
 }
 
 function range(a, b) {
-    var arr = [];
-    for (var i = a; i <= b; i++) arr.push(i);
+    let arr = [];
+    for (let i = a; i <= b; i++) arr.push(i);
     return arr;
 }
 
@@ -213,7 +214,7 @@ let sequenceA = [
 ];
 
 
-var buildIdA, buildIdB, buildIdC, buildIdD, buildIdE, buildIdF;
+let buildIdA, buildIdB, buildIdC, buildIdD, buildIdE, buildIdF;
 let sequenceB = [
     function() {
         resetAllSlavesToIdle();
@@ -255,18 +256,18 @@ let sequenceB = [
     }
 ];
 
-var dataSequenceFunctions = sequenceB;
-var currentSequenceIndex = 0;
+let dataSequenceFunctions = sequenceB;
+let currentSequenceIndex = 0;
 
 function progressDataSequence() {
     cloneSlavesList();
     cloneBuildQueue();
-    if (typeof dataSequenceFunctions[currentSequenceIndex] == 'undefined') currentSequenceIndex = 0;  // allows hot swapping dataToUse
+    if (typeof dataSequenceFunctions[currentSequenceIndex] === 'undefined') currentSequenceIndex = 0;  // allows hot swapping dataToUse
     dataSequenceFunctions[currentSequenceIndex]();
     currentSequenceIndex = (currentSequenceIndex + 1) % dataSequenceFunctions.length;
 }
 
-var shouldAutoRepeat = true;
+let shouldAutoRepeat = true;
 function setAutoProgress(newVal) {
     shouldAutoRepeat = newVal;
 }

@@ -6,8 +6,7 @@ html, body, h2, p {
 }
 
 html, body {
-    /*background-color: #141414;;*/
-    background-color: #888;;
+    background-color: #141414;;
 }
 
 pre {
@@ -158,8 +157,7 @@ pre {
 }
 
 .buildCircle.idleAttractor {
-    /*fill: rgba(0, 0, 0, 0);  !* transparent (instead of none) so that you can grab it *!*/
-    fill: rgb(194, 147, 102);  /* transparent (instead of none) so that you can grab it */
+    fill: rgba(0, 0, 0, 0);  /* transparent (instead of none) so that you can grab it */
     stroke:none;
 }
 
