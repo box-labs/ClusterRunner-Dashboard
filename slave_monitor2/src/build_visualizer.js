@@ -33,11 +33,12 @@ class BuildVisualizer extends BaseVisualizer
         this._repoNameRegex = repoNameRegex;
         this._queuedBuildNodes = [];  // keep track of these separately from this._graphNodes since the queue is not part of the graph
         this._force = null;
+        this._stage = null;
         this._width = null;
         this._height = null;
     }
 
-    init(g, force, width, height) {
+    init(g, force, stage, width, height) {
         // create selections
         this._buildGraphicGroups = g.selectAll('.buildGraphicGroup');
         this._buildLabels = g.selectAll('.buildLabel');
@@ -67,6 +68,7 @@ class BuildVisualizer extends BaseVisualizer
         };
         // save some useful properties
         this._force = force;
+        this._stage = stage;
         this._width = width;
         this._height = height;
     }

@@ -12,7 +12,11 @@ export default class {
         let width = window.innerWidth, height = window.innerHeight;
 
         let stage = new PIXI.Container();
-        let renderer = PIXI.autoDetectRenderer(width, height, {antialias: !0, transparent: !0, resolution: 1});
+        let renderer = PIXI.autoDetectRenderer(width, height, {
+            antialias: true,
+            transparent: true,
+            resolution: 1,
+        });
 
         document.body.appendChild(renderer.view);
 
@@ -21,6 +25,12 @@ export default class {
             return (num) => parseInt(scale(num).slice(1), 16);
         })();
 
+        let g = new PIXI.Graphics();
+        g.lineStyle(0, 0xFFFFFF);
+        g.beginFill(0xFFFFFF);
+        g.drawCircle(241, 132, 5);
+        stage.addChild(g);
+
         let graph = {};
 
         // console.log(d3.range(10));
@@ -28,6 +38,7 @@ export default class {
         graph.nodes = d3.range(300).map(function(i) {
           return {
             index: i,
+            group: Math.floor(i / 50)
           };
         });
 
@@ -38,8 +49,8 @@ export default class {
           };
         });
 
-        let links = new PIXI.Graphics();
-        stage.addChild(links);
+        let linksGraphics = new PIXI.Graphics();
+        stage.addChild(linksGraphics);
 
         graph.nodes.forEach((node) => {
             node.gfx = new PIXI.Graphics();
@@ -72,18 +83,18 @@ export default class {
                 gfx.position = new PIXI.Point(x, y);
             });
 
-            links.clear();
-            links.alpha = 0.6;
+            linksGraphics.clear();
+            linksGraphics.alpha = 0.6;
 
             graph.links.forEach((link) => {
                 let { source, target } = link;
                 // links.lineStyle(Math.sqrt(link.value), 0x999999);
-                links.lineStyle(2, 0x999999);
-                links.moveTo(source.x, source.y);
-                links.lineTo(target.x, target.y);
+                linksGraphics.lineStyle(2, 0x999999);
+                linksGraphics.moveTo(source.x, source.y);
+                linksGraphics.lineTo(target.x, target.y);
             });
 
-            links.endFill();
+            linksGraphics.endFill();
 
             renderer.render(stage);
 

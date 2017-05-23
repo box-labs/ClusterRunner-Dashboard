@@ -1,5 +1,6 @@
 'use strict';
 import * as d3 from 'd3';
+import * as PIXI from "pixi.js";
 
 import BuildQueueDatasource from './build_queue_datasource';
 import BuildVisualizer from './build_visualizer';
@@ -18,6 +19,8 @@ class SlaveMonitor {
         this._repoNameRegex = repoNameRegex;
         this.force = null;
         let _this = this;
+        this._renderer = null;
+        this._stage = null;
         Network.setErrorCallback(function(url, apiError) {
             // todo: this still stops execution -- should just have it show error until next successful call?
             Log.raw(apiError);
@@ -50,8 +53,16 @@ class SlaveMonitor {
             .attr('height', conf.height)
             .append('g');
 
-        this.force = d3.forceSimulation();
+        g.append('circle').attr('r', 5).attr('cx', 230).attr('cy', 132).attr('fill', 'white');
+        this._init_pixi(conf.width, conf.height);
+        let c = new PIXI.Graphics();
+        c.lineStyle(0, 0xFFFFFF);
+        c.beginFill(0xFFFFFF);
+        c.drawCircle(241, 132, 5);
+        this._stage.addChild(c);
+        this._renderer.render(this._stage);
 
+        this.force = d3.forceSimulation();
         _this.force
             .force('centerX', d3.forceX(conf.width / 2).strength(conf.gravity))
             .force('centerY', d3.forceY(conf.height / 2).strength(conf.gravity))
@@ -82,12 +93,21 @@ class SlaveMonitor {
                 visualizers.map(function(visualizer) {
                     nodes = nodes.concat(visualizer.getNodes());
                 });
+
                 // _this._swirl(nodes, _this.force, e.alpha, conf.width, conf.height);
                 _this._repelWalls(nodes, alpha, conf.width, conf.height);
                 _this._collide(nodes);
                 visualizers.map(function(visualizer) {
                     visualizer.tick(alpha)
                 });
+
+                nodes.forEach((node) => {
+                    if (node.gfx) {
+                        node.gfx.position = new PIXI.Point(node.x, node.y);
+                    }
+                });
+
+                _this._renderer.render(_this._stage);
             })
         ;
 
@@ -117,10 +137,21 @@ class SlaveMonitor {
 
 
         visualizers.forEach(function(visualizer) {
-            visualizer.init(g, _this.force, conf.width, conf.height)
+            visualizer.init(g, _this.force, _this._stage, conf.width, conf.height)
         });
         setTimeout(update, 1000);  // initial delay to give data sources a chance to update
     }
+
+    _init_pixi(width, height) {
+        this._stage = new PIXI.Container();
+        this._renderer = PIXI.autoDetectRenderer(width, height, {
+            antialias: true,
+            transparent: true,
+            resolution: 1,
+        });
+        document.body.appendChild(this._renderer.view);
+    }
+
     _collide(nodes) {
         // do collision detection between all nodes. use a quadtree for efficient filtering.
         // most of the below implementation is stolen from d3 examples, with minor edits.

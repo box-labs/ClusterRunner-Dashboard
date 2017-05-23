@@ -1,6 +1,43 @@
 
 import {conf} from './conf';
 import Visualizer from './base_visualizer';
+import * as PIXI from "pixi.js";
+
+
+class SlaveNode {
+    constructor(stage, slaveDatum, attractToNode) {
+        let gfx = new PIXI.Graphics();
+        gfx.lineStyle(4, 0x888888);
+        gfx.drawCircle(0, 0, 40);
+        stage.addChild(gfx);
+
+        this.type = 'slave';
+        this.slaveDatum = slaveDatum;
+        this.x = conf.width/2;
+        this.y = conf.height/2;  // initial position so it doesn't get stuck at 0,0
+        this.size = conf.slaveCircleSize;
+        this.wallRepelForce = conf.slaveWallRepelForce;
+        this.link = null;
+        this.attractToNode = attractToNode;
+        this.gfx = gfx;
+    }
+
+    classes() {
+        let extraClasses = '';
+        let slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
+        let slaveIsMarkedDead = this.slaveDatum.is_alive === false;
+        if (slaveIsMarkedDead) {
+            extraClasses += 'dead ';
+        }
+        else if (slaveIsBusy) {
+            extraClasses += 'busy ';
+        }
+        else {
+            extraClasses += 'idle ';
+        }
+        return 'slaveCircle ' + extraClasses;
+    }
+}
 
 
 class SlaveVisualizer extends Visualizer
@@ -13,16 +50,18 @@ class SlaveVisualizer extends Visualizer
         this._slaveCircles = null;
         this._slaveLabels = null;
         this._force = null;
+        this._stage = null;
         this._width = null;
         this._height = null;
     }
 
-    init(g, force, width, height) {
+    init(g, force, stage, width, height) {
         this._g = g;
         this._slaveCircles = g.selectAll('.slaveCircle');
         this._slaveLabels = g.selectAll('.slaveLabel');
         this._slaveToBuildLinks = g.selectAll('.slaveToBuildLinks');
         this._force = force;
+        this._stage = stage;
         this._width = width;
         this._height = height;
     };
@@ -69,31 +108,7 @@ class SlaveVisualizer extends Visualizer
             }
             else {
                 // otherwise this is a new node
-                graphNode = {
-                    type: 'slave',
-                    slaveDatum: slaveDatum,
-                    x: conf.width/2,
-                    y: conf.height/2,  // initial position so it doesn't get stuck at 0,0
-                    size: conf.slaveCircleSize,
-                    classes: function() {
-                        let extraClasses = '';
-                        let slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
-                        let slaveIsMarkedDead = this.slaveDatum.is_alive === false;
-                        if (slaveIsMarkedDead) {
-                            extraClasses += 'dead ';
-                        }
-                        else if (slaveIsBusy) {
-                            extraClasses += 'busy ';
-                        }
-                        else {
-                            extraClasses += 'idle ';
-                        }
-                        return 'slaveCircle ' + extraClasses;
-                    },
-                    wallRepelForce: conf.slaveWallRepelForce,
-                    link: null,
-                    attractToNode: attractToNode
-                };
+                graphNode = new SlaveNode(this._stage, slaveDatum, attractToNode);
                 ++attractToNode.numAttractedSlaves;
             }
             updatedGraphNodesList.push(graphNode);

@@ -28,21 +28,16 @@ if (masterUrl.indexOf(':') < 0) {
 let hostAbbrevRegex = conf.slave_monitor.host_abbreviation_regex || null;
 let repoNameRegex = conf.slave_monitor.repo_name_regex || '(.*)';
 
-function abc() {
-    console.log('abc');
-}
-
 window.DEBUG_MODE = urlParams.debug || conf.debug;
 Log.setLevel(Log.DEBUG);
 // Log.setLevel(Log.WARNING);
 if (window.DEBUG_MODE) {
     Log.setLevel(Log.DEBUG);
-    FakeData.beginAutoRepeatingProgression();
-    // FakeData.progressDataSequence();
-    // FakeData.progressDataSequence();
-    // FakeData.progressDataSequence();
+    // FakeData.beginAutoRepeatingProgression();
+    FakeData.progressDataSequence();
+    FakeData.progressDataSequence();
+    FakeData.progressDataSequence();
 }
-
 
 window.d3 = d3;
 let monitor = new SlaveMonitor('.dashboard', masterUrl, hostAbbrevRegex, repoNameRegex);
@@ -51,3 +46,7 @@ monitor.startMonitor();
 // import art from './art';
 // let a = new art();
 // a.render();
+
+// import test from './test2';
+// let t = new test();
+// t.render();
