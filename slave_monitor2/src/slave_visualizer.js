@@ -26,6 +26,15 @@ class SlaveNode {
         this._setText(this._getLabel());
         stage.addChild(this.gfx);
         this.remove = () => stage.removeChild(this.gfx);
+
+        // let blurFilter1 = new PIXI.filters.BlurFilter();
+        // blurFilter1.blur = 2;
+        // this.gfx.filters = [blurFilter1];
+        // let colorMatrix = new PIXI.filters.ColorMatrixFilter();
+        // this.gfx.filters = [colorMatrix];
+        // colorMatrix.contrast(2);
+
+        // this.gfx.rotation = Math.random() * 2 * Math.PI;
     }
 
     update() {
