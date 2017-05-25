@@ -130,7 +130,6 @@ class BuildVisualizer extends BaseVisualizer
 
     update() {
         // Create or remove any nodes or links based on the current datasource data, then update svg representations.
-        let _this = this;
         let graphStateChanged = false;
         // Get a list of current build ids from the slave datasource.
         // todo: get this from the BUILDING builds in the queue datasource (and maybe supplement with slave datasource?)
@@ -178,7 +177,7 @@ class BuildVisualizer extends BaseVisualizer
         return graphStateChanged;
     }
 
-    _updateQueueVisualization(newActiveBuildIds) {
+    _updateQueueVisualization(currentActiveBuildIds) {
         // todo: move buildqueue to separate vis?
         // copy the build queue data map so we can modify it
         let datasourceData = this._buildQueueDatasource.data;
@@ -187,8 +186,9 @@ class BuildVisualizer extends BaseVisualizer
             queuedBuildsById[queuedBuildId] = datasourceData[queuedBuildId];
         });
         // iterate through active builds, deleting those from map
-        for (let i = 0, l = newActiveBuildIds.length; i < l; i++) {
-            delete queuedBuildsById[newActiveBuildIds[i]];
+        // wip: why is this necessary if we're filtering on QUEUED below? (can't be since there are also ERROR builds
+        for (let i = 0, l = currentActiveBuildIds.length; i < l; i++) {
+            delete queuedBuildsById[currentActiveBuildIds[i]];
         }
         let newQueuedBuildIds = Object.keys(queuedBuildsById);
         let nodes = [];
@@ -204,7 +204,6 @@ class BuildVisualizer extends BaseVisualizer
     }
 
     _updateSvgElements() {
-        let _this = this;
         this._buildGraphicGroups = this._buildGraphicGroups.data(this._graphNodes, function(d) {
             return d.buildId
         });
@@ -343,8 +342,8 @@ class BuildVisualizer extends BaseVisualizer
                 d.x = conf.queuedBuildSize + 5;
                 return d.x;
             })
-            .attr('cy', function(d, i) {
-                return _this._height + (2 * i + 1) * (conf.queuedBuildSize + 5)
+            .attr('cy', (d, i) => {
+                return this._height + (2 * i + 1) * (conf.queuedBuildSize + 5)
             });
         enterQueuedBuilds.transition().duration(1000)
             .delay(function(d, i) {
@@ -368,8 +367,8 @@ class BuildVisualizer extends BaseVisualizer
             .attr('class', 'queuedBuildLabel')
             .attr('text-anchor', 'middle')
             .attr('x', conf.queuedBuildSize + 5)
-            .attr('y', function(d, i) {
-                return _this._height + (2 * i + 1) * (conf.queuedBuildSize + 5) + 4
+            .attr('y', (d, i) => {
+                return this._height + (2 * i + 1) * (conf.queuedBuildSize + 5) + 4
             })
             .text(function(d) {
                 return '' + d.buildId

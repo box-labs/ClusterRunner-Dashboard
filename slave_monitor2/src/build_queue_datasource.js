@@ -13,26 +13,26 @@ function BuildQueueDatasource(masterUrl)
 
     this.data = {};  // This will be an auto-updating map from queued build id to build info.
 }
-var cls = BuildQueueDatasource.prototype;
+let cls = BuildQueueDatasource.prototype;
 
 cls.start = function()
 {
-    var _this = this;
+    let _this = this;
     function updateData() {
 
         function handleData(apiData) {
             // Log.info('BuildQueueDatasource.handleData()');
-            var newData = apiData['queue'];
+            let newData = apiData['queue'];
 
             // Remove all elements from the current data object
-            var existingKeys = Object.keys(_this.data);
-            for (var k = 0; k < existingKeys.length; k++) {
+            let existingKeys = Object.keys(_this.data);
+            for (let k = 0; k < existingKeys.length; k++) {
                 delete _this.data[existingKeys[k]];
             }
 
             // Add all elements in newData to the existing data object
-            for (var i = 0; i < newData.length; i++) {
-                var build = newData[i];
+            for (let i = 0; i < newData.length; i++) {
+                let build = newData[i];
                 _this.data[build['id']] = build;
             }
         }
