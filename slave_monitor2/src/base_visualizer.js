@@ -65,4 +65,4 @@ cls.update = function(){notImplemented('update')};
 cls.tick = function(){notImplemented('tick')};
 
 
-module.exports = Visualizer;
+export default Visualizer;

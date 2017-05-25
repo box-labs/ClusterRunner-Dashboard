@@ -1,4 +1,4 @@
-export let conf = {
+export let dashboard_conf = {
 
     // The url of the cluster master -- set value in this conf file to avoid needing to specify in query params
     master_url: 'localhost:43000',

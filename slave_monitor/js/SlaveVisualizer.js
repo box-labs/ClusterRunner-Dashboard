@@ -143,11 +143,11 @@ cls.update = function()
     });
     this._graphLinks = graphLinks;
 
-    this._updateSvgElements();
+    this._updateGraphics();
     return graphStateChanged;
 };
 
-cls._updateSvgElements = function()
+cls._updateGraphics = function()
 {
     this._slaveCircles = this._slaveCircles.data(this._graphNodes, function(d) {return d.slaveDatum['url']});
     this._slaveCircles.enter()

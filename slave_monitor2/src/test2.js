@@ -8,15 +8,11 @@ export default class {
     }
 
     render() {
-
-        let width = window.innerWidth, height = window.innerHeight;
+        let width = 960, height = 600;
 
         let stage = new PIXI.Container();
-        let renderer = PIXI.autoDetectRenderer(width, height, {
-            antialias: true,
-            transparent: true,
-            resolution: 1,
-        });
+        let renderer = PIXI.autoDetectRenderer(width, height,
+            {antialias: !0, transparent: !0, resolution: 1});
 
         document.body.appendChild(renderer.view);
 
@@ -25,47 +21,38 @@ export default class {
             return (num) => parseInt(scale(num).slice(1), 16);
         })();
 
-        let g = new PIXI.Graphics();
-        g.lineStyle(0, 0xFFFFFF);
-        g.beginFill(0xFFFFFF);
-        g.drawCircle(241, 132, 5);
-        stage.addChild(g);
+        let simulation = d3.forceSimulation()
+            .force('link', d3.forceLink().id((d) => d.id))
+            .force('charge', d3.forceManyBody())
+            .force('center', d3.forceCenter(width / 2, height / 2));
 
         let graph = {};
 
-        // console.log(d3.range(10));
-
         graph.nodes = d3.range(300).map(function(i) {
-          return {
-            index: i,
-            group: Math.floor(i / 50)
-          };
+            return {
+                id: i,
+                group: Math.floor(i / 50),
+
+            };
         });
 
         graph.links = d3.range(graph.nodes.length - 1).map(function(i) {
-          return {
-            source: Math.floor(Math.sqrt(i)),
-            target: i + 1,
-          };
+            return {
+                source: Math.floor(Math.sqrt(i)),
+                target: i + 1,
+            };
         });
 
-        let linksGraphics = new PIXI.Graphics();
-        stage.addChild(linksGraphics);
+        let links = new PIXI.Graphics();
+        stage.addChild(links);
 
         graph.nodes.forEach((node) => {
             node.gfx = new PIXI.Graphics();
-            node.gfx.lineStyle(2, 0xFFFFFF);
+            node.gfx.lineStyle(1.5, 0xFFFFFF);
             node.gfx.beginFill(colour(node.group));
             node.gfx.drawCircle(0, 0, 5);
             stage.addChild(node.gfx);
         });
-
-        let simulation = d3.forceSimulation(graph.nodes)
-            // .force('link', d3.forceLink().id((d) => d.id))
-            .force('link', d3.forceLink(graph.links).distance(10).strength(1))
-            .force('charge', d3.forceManyBody().strength(-30))
-            .force('center', d3.forceCenter(width / 2, height / 2))
-            .on("tick", ticked);
 
         d3.select(renderer.view)
             .call(d3.drag()
@@ -76,29 +63,35 @@ export default class {
                 .on('end', dragended));
 
 
-        function ticked() {
+        simulation
+            .nodes(graph.nodes)
+            .on('tick', ticked);
 
-            graph.nodes.forEach((node) => {
-                let { x, y, gfx } = node;
-                gfx.position = new PIXI.Point(x, y);
-            });
+        simulation.force('link')
+              .links(graph.links);
 
-            linksGraphics.clear();
-            linksGraphics.alpha = 0.6;
+      function ticked() {
 
-            graph.links.forEach((link) => {
-                let { source, target } = link;
-                // links.lineStyle(Math.sqrt(link.value), 0x999999);
-                linksGraphics.lineStyle(2, 0x999999);
-                linksGraphics.moveTo(source.x, source.y);
-                linksGraphics.lineTo(target.x, target.y);
-            });
+          graph.nodes.forEach((node) => {
+              let { x, y, gfx } = node;
+              gfx.position = new PIXI.Point(x, y);
+          });
 
-            linksGraphics.endFill();
+          links.clear();
+          links.alpha = 0.6;
 
-            renderer.render(stage);
+          graph.links.forEach((link) => {
+              let { source, target } = link;
+              links.lineStyle(Math.sqrt(link.value), 0x999999);
+              links.moveTo(source.x, source.y);
+              links.lineTo(target.x, target.y);
+          });
 
-        }
+          links.endFill();
+
+          renderer.render(stage);
+
+      }
 
         function dragstarted() {
             if (!d3.event.active) simulation.alphaTarget(0.3).restart();

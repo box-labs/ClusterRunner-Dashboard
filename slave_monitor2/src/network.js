@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import Log from './log';
+import {Log} from './log';
 
 
 function Network() {}

@@ -1,3 +1,14 @@
+/* temp settings for switching from svg to canvas */
+canvas, svg {
+    position: absolute;
+}
+canvas {
+    z-index: 1;
+}
+
+
+
+
 html, body, h2, p {
 	margin: 0;
 	padding: 0;

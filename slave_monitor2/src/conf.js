@@ -7,7 +7,7 @@
 //DEBUG_MODE = true;
 //Log.setLevel(Log.DEBUG);
 
-var conf = {
+let conf = {
     height: null,
     width: null,
     features: {

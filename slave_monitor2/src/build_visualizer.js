@@ -2,10 +2,81 @@
 
 import {conf} from './conf';
 import BaseVisualizer from './base_visualizer';
+import {rgb} from './util';
+import * as PIXI from "pixi.js";
 
 
 let IDLE = 'IDLE';  // a special identifier to represent the null build
 let extraGravity = 0.01;
+
+let buildLineColor = rgb('#1F78C1');
+let buildFillColor = rgb('#1F2D3A');
+let buildLabelColor = rgb('#D8D9DA');
+
+
+class BuildNode {
+    constructor(buildId, buildData = null, stage = null) {
+        this.type = 'build';  // wip: remove and use class
+        this.buildId = buildId;
+        this.size = conf.queuedBuildSize;  // start with small queued build size (we'll animate to full size)
+        this.wallRepelForce = conf.buildWallRepelForce;
+        this.x = conf.queuedBuildSize + 5;
+        this.y = conf.height + conf.queuedBuildSize + 5;
+        this.shouldUpdateElapsedTime = true;
+        this.numAttractedSlaves = 0;
+        this.repoName = '';
+        if (buildData) {
+            let repoNameRegex = new RegExp(conf.dashboard.slave_monitor.repo_name_regex || '(.*)', 'g');
+            this.jobName = buildData.request_params.job_name;
+            this.startTime = buildData.state_timestamps.building;
+            let matches = repoNameRegex.exec(buildData.request_params.url);
+            if (matches && matches.length > 1) {
+                this.repoName = matches[1];
+            }
+        }
+        if (stage) {
+            this.gfx = new PIXI.Graphics();
+            stage.addChild(this.gfx);
+
+            this.gfx.beginFill(0xFFEE33);
+            this.gfx.drawCircle(0, 0, this.size);
+
+            this.remove = () => stage.removeChild(this.gfx);
+        }
+    }
+
+    update() {
+        this.gfx.clear();
+        // gfx.lineStyle(2, color);
+        this.gfx.beginFill(color);
+        this.gfx.drawCircle(0, 0, this.size);
+    }
+}
+
+
+// a fake build node to represent the lack of a build
+class IdleSlaveNode extends BuildNode {
+    constructor() {
+        super(IDLE);
+        this.extraClass = 'idleAttractor';  // wip: remove
+        this.hideLabel = true;
+        this.size = conf.buildSize * 1.2;
+        this.slaveEmbedAmount = conf.buildSize * 1.2;
+        this.linkLength = 10;
+        this.linkStrength = 0.2;
+        this.charge = -350;
+        this.preventQueueAnimation = true;
+        this.numAttractedSlaves = 0;
+        this.id = "idle";
+        this.x = conf.width / 2;
+        this.y = conf.height / 2;
+    }
+
+    update() {
+        // do nothing
+    }
+}
+
 
 
 function _formatTimeDuration(numTotalSeconds) {
@@ -47,30 +118,14 @@ class BuildVisualizer extends BaseVisualizer
         // create dummy elements so we can access css values
         this._dummyBuildCircle = g.append('circle').attr('class', 'buildCircle invisible');
         this._dummyQueuedBuildGraphic = g.append('circle').attr('class', 'queuedBuildGraphic invisible');
+
         // todo: move this node to SlaveVisualizer instead?
-        this._specialIdleNode = { // a fake build node to represent the lack of a build
-            type: 'build',  // this is needed to make this build collide with other builds because of how collision detection is implemented
-            extraClass: 'idleAttractor',
-            hideLabel: true,
-            // alternateLabel: 'idle nodes',
-            buildId: IDLE,
-            size: conf.buildSize * 1.2,  // todo: adjust size based on how many idle slaves?
-            slaveEmbedAmount: conf.buildSize * 1.2,
-            wallRepelForce: conf.buildWallRepelForce,
-            linkLength: 10,
-            linkStrength: 0.2,
-            charge: -350,
-            preventQueueAnimation: true,
-            numAttractedSlaves: 0,
-            id: "idle",
-            x: conf.width / 2,
-            y: conf.height / 2
-        };
+        this._specialIdleNode = new IdleSlaveNode();
         // save some useful properties
         this._force = force;
         this._stage = stage;
-        this._width = width;
-        this._height = height;
+        this._width = width;  // wip: needed?
+        this._height = height;  // wip: needed?
     }
 
     update() {
@@ -79,78 +134,46 @@ class BuildVisualizer extends BaseVisualizer
         let graphStateChanged = false;
         // Get a list of current build ids from the slave datasource.
         // todo: get this from the BUILDING builds in the queue datasource (and maybe supplement with slave datasource?)
-        let currentActiveSlaveData = Object.keys(this._slaveDatasource.data)
-            .map(function(slaveId) {
-                return _this._slaveDatasource.data[slaveId]
-            })
+        let currentActiveSlaveData = Object.values(this._slaveDatasource.data)
             .filter(function(slaveDatum) {
                 return slaveDatum.current_build_id !== null
             });
-        let newBuildIds = {};  // start with an object so we can easily dedupe build ids
+
+        // Get list of build ids which slaves are currently working on.
+        let currentBuildIds = {};
         currentActiveSlaveData.map(function(slaveDatum) {
-            newBuildIds[slaveDatum.current_build_id] = true;  // value doesn't matter -- we just need the keys
+            currentBuildIds[slaveDatum.current_build_id] = true;  // value doesn't matter -- we just need the keys
         });
-        newBuildIds = Object.keys(newBuildIds).sort();
+        currentBuildIds = Object.keys(currentBuildIds).sort();
+
         // Generate a map from build id to graphNode
         let graphNodesByBuildId = {};
         for (let i = 0, iMax = this._graphNodes.length; i < iMax; i++) {
             if (this._graphNodes[i] === this._specialIdleNode) continue;  // ignore this special node when detecting changes
             graphNodesByBuildId[this._graphNodes[i].buildId] = this._graphNodes[i];
         }
+
         // Compare the old build ids and new build ids to see if the force graph has changed.
         let oldBuildIds = Object.keys(graphNodesByBuildId).sort();
-        graphStateChanged = !this.areArraysSame(oldBuildIds, newBuildIds) || graphStateChanged;
+        graphStateChanged = !this.areArraysSame(oldBuildIds, currentBuildIds) || graphStateChanged;
+
         // Create a new updated list of graphNodes.
         let updatedGraphNodesList = [];
-        for (let i = 0, iMax = newBuildIds.length; i < iMax; i++) {
-            let buildId = newBuildIds[i];
-            let graphNode;
+        for (let i = 0, iMax = currentBuildIds.length; i < iMax; i++) {
+            let buildId = currentBuildIds[i];
             if (buildId in graphNodesByBuildId) {
                 // if we already have a node for this id, just update that object instead of replacing it (the object has extra positioning data that we want to preserve)
-                graphNode = graphNodesByBuildId[buildId];
+                updatedGraphNodesList.push(graphNodesByBuildId[buildId]);
             }
             else if (buildId in this._buildQueueDatasource.data) {
                 // otherwise this is a new graph node
                 let buildData = this._buildQueueDatasource.data[buildId];
-                let repoName = '';
-                let matches = (new RegExp(this._repoNameRegex, 'g')).exec(buildData.request_params.url);
-                if (matches && matches.length > 1) {
-                    repoName = matches[1];
-                }
-                graphNode = {
-                    type: 'build',
-                    buildId: buildId,
-                    size: conf.queuedBuildSize,  // start with small queued build size (we'll animate to full size)
-                    wallRepelForce: conf.buildWallRepelForce,
-                    x: conf.queuedBuildSize + 5,
-                    y: this._height + conf.queuedBuildSize + 5,
-                    jobName: buildData.request_params.job_name,
-                    repoName: repoName,
-                    startTime: buildData.state_timestamps.building,
-                    shouldUpdateElapsedTime: true,
-                    numAttractedSlaves: 0
-                };
-                // search the queued nodes to see if we've already drawn this build, so we can have position continuity
-                // todo: is this needed? would this be handled by the above if block?
-                for (let j = 0, jMax = this._queuedBuildNodes.length; j < jMax; j++) {
-                    let queuedBuildNode = this._queuedBuildNodes[j];
-                    if (queuedBuildNode.buildId === buildId) {
-                        graphNode.x = queuedBuildNode.x;
-                        graphNode.y = queuedBuildNode.y;
-                        graphNode.px = graphNode.x - 40;  // set previous position to give this node some velocity
-                        graphNode.py = graphNode.y - 40;
-                        graphNode.fromQueue = true;  // flag to enable animating between queued and active appearances
-                    }
-                }
+                updatedGraphNodesList.push(new BuildNode(buildId, buildData, this._stage));
             }
-            else {
-                continue;
-            }
-            updatedGraphNodesList.push(graphNode);
         }
         updatedGraphNodesList.push(this._specialIdleNode);
         this._graphNodes = updatedGraphNodesList;
-        this._updateQueueVisualization(newBuildIds);
+        this._updateQueueVisualization(currentBuildIds);
         this._updateSvgElements();
         return graphStateChanged;
     }
@@ -377,4 +400,4 @@ class BuildVisualizer extends BaseVisualizer
     }
 }
 
-module.exports = BuildVisualizer;
+export default BuildVisualizer;

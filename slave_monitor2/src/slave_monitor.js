@@ -12,10 +12,9 @@ import SlaveVisualizer from './slave_visualizer';
 
 
 class SlaveMonitor {
-    constructor(containerSelector, masterUrl, hostAbbrevRegex, repoNameRegex) {
+    constructor(containerSelector, masterUrl, repoNameRegex) {
         this._masterUrl = masterUrl;
         this._container = d3.select(containerSelector);
-        this._hostAbbrevRegex = hostAbbrevRegex;
         this._repoNameRegex = repoNameRegex;
         this.force = null;
         let _this = this;
@@ -38,7 +37,7 @@ class SlaveMonitor {
         let buildQueueDatasource = new BuildQueueDatasource(this._masterUrl);
         buildQueueDatasource.start();
         let buildVisualizer = new BuildVisualizer(slaveDatasource, buildQueueDatasource, this._repoNameRegex);
-        let slaveVisualizer = new SlaveVisualizer(slaveDatasource, buildVisualizer, this._hostAbbrevRegex);
+        let slaveVisualizer = new SlaveVisualizer(slaveDatasource, buildVisualizer);
         // the order of this array matters! dependent visualizations should come after dependees.
         this._startVisualization([buildVisualizer, slaveVisualizer]);
     };
@@ -48,25 +47,22 @@ class SlaveMonitor {
         conf.width = _getNumericalStyleAttribute(this._container, 'width');
         conf.height = _getNumericalStyleAttribute(this._container, 'height');
         Log.info(`w:${conf.width}, h:${conf.height}`);
-        let g = this._container.append('svg')
+
+        this._init_pixi(conf.width, conf.height);
+
+        let detached = d3.select(document.createElement('div'));
+        let g =
+            this._container
+            // detached
+            .append('svg')
             .attr('width', conf.width)
             .attr('height', conf.height)
             .append('g');
-
-        g.append('circle').attr('r', 5).attr('cx', 230).attr('cy', 132).attr('fill', 'white');
-        this._init_pixi(conf.width, conf.height);
-        let c = new PIXI.Graphics();
-        c.lineStyle(0, 0xFFFFFF);
-        c.beginFill(0xFFFFFF);
-        c.drawCircle(241, 132, 5);
-        this._stage.addChild(c);
-        this._renderer.render(this._stage);
 
         this.force = d3.forceSimulation();
         _this.force
             .force('centerX', d3.forceX(conf.width / 2).strength(conf.gravity))
             .force('centerY', d3.forceY(conf.height / 2).strength(conf.gravity))
-            // .force('charge', d3.forceManyBody().strength(-1000))
             .force('charge', d3.forceManyBody().strength(function(d) {
                 if (d.type === 'slave') {
                     return (d.slaveDatum['num_executors_in_use'] === 0
@@ -75,8 +71,6 @@ class SlaveMonitor {
                 }
                 return d.charge || conf.buildCharge;
             }))
-            // .force('link', d3.forceLink().id(function(d) { return d.id; }))
-            // .force('link', d3.forceLink().id(function(d) { return d.index; }))
             .force('link', d3.forceLink()
                 .id(function(d) { return d.id; })
                 .distance(function(d) {
@@ -86,7 +80,6 @@ class SlaveMonitor {
                     return d.linkStrength || conf.defaultLinkStrength
                 })
             )
-            // .on("tick", ticked)
             .on('tick', function() {
                 let alpha = _this.force.alpha();
                 let nodes = [];
@@ -101,7 +94,7 @@ class SlaveMonitor {
                     visualizer.tick(alpha)
                 });
 
-                nodes.forEach((node) => {
+                nodes.forEach((node) => {  // todo: move into visualizer? maybe not necessary.
                     if (node.gfx) {
                         node.gfx.position = new PIXI.Point(node.x, node.y);
                     }
@@ -110,6 +103,27 @@ class SlaveMonitor {
                 _this._renderer.render(_this._stage);
             })
         ;
+        d3.select(this._renderer.view)
+            .call(d3.drag()
+                .container(this._renderer.view)
+                .subject(() => {console.log('a'); return this.force.find(d3.event.x, d3.event.y)})
+                .on('start', () => {
+                    console.log('start');
+                    if (!d3.event.active) this.force.alphaTarget(0.3).restart();
+                    d3.event.subject.fx = d3.event.subject.x;
+                    d3.event.subject.fy = d3.event.subject.y;
+                })
+                .on('drag', () => {
+                    console.log('drag');
+                    d3.event.subject.fx = d3.event.x;
+                    d3.event.subject.fy = d3.event.y;
+                })
+                .on('end', () => {
+                    console.log('end');
+                    if (!d3.event.active) this.force.alphaTarget(0);
+                    d3.event.subject.fx = null;
+                    d3.event.subject.fy = null;
+                }));
 
 
         function update() {
@@ -124,7 +138,7 @@ class SlaveMonitor {
 
             //d3 removes all existing click handlers on an element before adding a
             // new one. https://github.com/mbostock/d3/wiki/Selections#on
-            d3.selectAll('.slaveCircle').on('click', function(e, i) {
+            d3.selectAll('.slaveCircle').on('click', function(e, i) {  // todo: fix for canvas
                 window.open('http://' + e.slaveDatum.url + '/v1', '');
             });
             if (graphStateChanged) {
@@ -143,13 +157,17 @@ class SlaveMonitor {
     }
 
     _init_pixi(width, height) {
+        let scale = window.devicePixelRatio;
         this._stage = new PIXI.Container();
         this._renderer = PIXI.autoDetectRenderer(width, height, {
             antialias: true,
             transparent: true,
-            resolution: 1,
+            resolution: scale,
         });
-        document.body.appendChild(this._renderer.view);
+        this._container.node().appendChild(this._renderer.view);
+        d3.select(this._renderer.view).style('width', width + 'px').style('height', height + 'px');
+        // this._container.append(d3.select(this._renderer.view));
+        // document.body.appendChild(this._renderer.view);
     }
 
     _collide(nodes) {

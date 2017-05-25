@@ -1,25 +1,81 @@
 
 import {conf} from './conf';
+import {rgb} from './util';
 import Visualizer from './base_visualizer';
 import * as PIXI from "pixi.js";
 
 
+let idleSlaveColor = rgb('#34692C');
+let busySlaveColor = rgb('#6CC644');
+let deadSlaveColor = rgb('#B10502');
+let slaveLabelColor = rgb('#AEAEAE');
+
+
 class SlaveNode {
     constructor(stage, slaveDatum, attractToNode) {
-        let gfx = new PIXI.Graphics();
-        gfx.lineStyle(4, 0x888888);
-        gfx.drawCircle(0, 0, 40);
-        stage.addChild(gfx);
-
         this.type = 'slave';
         this.slaveDatum = slaveDatum;
-        this.x = conf.width/2;
-        this.y = conf.height/2;  // initial position so it doesn't get stuck at 0,0
+        this.x = conf.width / 2;
+        this.y = conf.height / 2;  // initial position so it doesn't get stuck at 0,0
         this.size = conf.slaveCircleSize;
         this.wallRepelForce = conf.slaveWallRepelForce;
         this.link = null;
         this.attractToNode = attractToNode;
-        this.gfx = gfx;
+
+        this.gfx = new PIXI.Graphics();
+        this._setText(this._getLabel());
+        stage.addChild(this.gfx);
+        this.remove = () => stage.removeChild(this.gfx);
+    }
+
+    update() {
+        let slaveIsMarkedDead = this.slaveDatum.is_alive === false;
+        let slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
+        if (slaveIsMarkedDead) {
+            this._setCircle(deadSlaveColor);
+        } else if (slaveIsBusy) {
+            this._setCircle(busySlaveColor);
+        } else {
+            this._setCircle(idleSlaveColor);
+        }
+    }
+
+    _setCircle(color) {
+        this.gfx.clear();
+        // gfx.lineStyle(2, color);
+        this.gfx.beginFill(color);
+        this.gfx.drawCircle(0, 0, this.size);
+    }
+
+    _setText(string) {
+        let style = new PIXI.TextStyle({
+            fontFamily: '"Open Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif',
+            fontSize: '7.5px',
+            fontWeight: '300',
+            fill: ['#ffffff'],
+        });
+
+        let text = new PIXI.Text(this._getLabel(), style);
+        text.y = this.size;
+        text.anchor.set(0.5, 0);
+        this.gfx.addChild(text);
+    }
+
+    _getLabel() {
+        let hostAbbrevRegex = conf.dashboard.slave_monitor.host_abbreviation_regex;
+        let slaveUrl = this.slaveDatum['url'];
+        // generate an abbreviated hostname from the dashboard.ini conf value
+        let matches = (new RegExp(hostAbbrevRegex, 'g')).exec(slaveUrl);
+        if (matches && matches.length > 1) {
+            return matches[1];
+        }
+        // if no conf value specified, extract the last numerical sequence before the port number (if any)
+        matches = /(\d+)[\D]*:\d+$/.exec(slaveUrl);
+        if (matches && matches.length > 1) {
+            return matches[1];
+        }
+        // if still no match, just abbreviate the hostname
+        return slaveUrl.substring(0, 7) + '...';
     }
 
     classes() {
@@ -42,11 +98,10 @@ class SlaveNode {
 
 class SlaveVisualizer extends Visualizer
 {
-    constructor(slaveDatasource, buildVisualizer, hostAbbrevRegex) {
+    constructor(slaveDatasource, buildVisualizer) {
         super();
         this._slaveDatasource = slaveDatasource;
         this._buildVisualizer = buildVisualizer;
-        this._hostAbbrevRegex = hostAbbrevRegex;
         this._slaveCircles = null;
         this._slaveLabels = null;
         this._force = null;
@@ -143,67 +198,19 @@ class SlaveVisualizer extends Visualizer
             }
         });
         this._graphLinks = graphLinks;
-        this._updateSvgElements();
+        this._updateGraphics();
         return graphStateChanged;
     };
 
-    _updateSvgElements() {
-        let hostAbbrevRegex = this._hostAbbrevRegex;
-        this._slaveCircles = this._slaveCircles.data(this._graphNodes, function(d) {
-            return d.slaveDatum['url']
-        });
-        this._slaveCircles.exit()  // Destroy
-            .remove();
+    _updateGraphics() {
+        this._slaveCircles = this._slaveCircles.data(
+            this._graphNodes,
+            d => d.slaveDatum['url']);
+        this._slaveCircles.exit()
+            .each(d => d.remove());
         this._slaveCircles = this._slaveCircles
-            .enter()  // Create
-            .append('circle')
-            .attr('r', function(d) {
-                return d.size;
-            })
-            .call(this.drag(this._force))
-            .merge(this._slaveCircles)  // Create + Update
-            .attr('class', function(d) {
-                return d.classes();
-            })
-        ;
-        this._slaveLabels = this._slaveLabels.data(this._graphNodes, function(d) {
-            return d.slaveDatum['url']
-        });
-        this._slaveLabels.exit()  // Destroy
-            .remove();
-        let enterSelection = this._slaveLabels
-            .enter()  // Create
-            .append('text')
-            .attr('class', 'slaveLabel')
-            .text(function(d) {
-                let slaveUrl = d.slaveDatum['url'];
-                // generate an abbreviated hostname from the dashboard.ini conf value
-                let matches = (new RegExp(hostAbbrevRegex, 'g')).exec(slaveUrl);
-                if (matches && matches.length > 1) {
-                    return matches[1];
-                }
-                // if no conf value specified, extract the last numerical sequence before the port number (if any)
-                matches = /(\d+)[\D]*:\d+$/.exec(slaveUrl);
-                if (matches && matches.length > 1) {
-                    return matches[1];
-                }
-                // if still no match, just abbreviate the hostname
-                return slaveUrl.substring(0, 7) + '...';
-            });
-        this._slaveLabels = enterSelection.merge(this._slaveLabels);
-        if (conf.features.drawSlaveLinks) {
-            let slaveToBuildLinks = this._g.selectAll('.slaveLink')
-                .data(this._graphLinks, function(d) {
-                    return d.source.slaveDatum['url']
-                });
-            slaveToBuildLinks.exit().remove();
-            slaveToBuildLinks.enter().append('line')
-                .attr('class', 'slaveLink');
-        }
-        else {
-            let slaveToBuildLinks = this._g.selectAll('.slaveLink').data([]);
-            slaveToBuildLinks.exit().remove();
-        }
+            .enter().merge(this._slaveCircles)
+            .each(d => d.update());
     };
 
     /**
@@ -240,43 +247,7 @@ class SlaveVisualizer extends Visualizer
                 })
             });
         });
-        // update positions of svg circles
-        this._slaveCircles
-            .attr('cx', function(d) {
-                return d.x;
-            })
-            .attr('cy', function(d) {
-                return d.y;
-            });
-        // update positions of text labels
-        this._slaveLabels
-            .attr('text-anchor', 'middle')
-            .attr('x', function(d) {
-                return d.x;
-            })
-            .attr('y', function(d) {
-                return d.y + d.size + 9;
-            });
-        if (conf.features.drawSlaveLinks) {
-            // update positions of svg lines
-            this._g.selectAll('.slaveLink')
-                .attr('x1', function(d) {
-                    return d.source.x;
-                })
-                .attr('x1', function(d) {
-                    return d.source.x;
-                })
-                .attr('y1', function(d) {
-                    return d.source.y;
-                })
-                .attr('x2', function(d) {
-                    return d.target.x;
-                })
-                .attr('y2', function(d) {
-                    return d.target.y;
-                });
-        }
     };
 }
 
-module.exports = SlaveVisualizer;
+export default SlaveVisualizer;

@@ -48,4 +48,4 @@ cls.start = function()
 };
 
 
-module.exports = BuildQueueDatasource;
+export default BuildQueueDatasource;
