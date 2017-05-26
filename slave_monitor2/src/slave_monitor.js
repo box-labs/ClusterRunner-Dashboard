@@ -106,20 +106,17 @@ class SlaveMonitor {
         d3.select(this._renderer.view)
             .call(d3.drag()
                 .container(this._renderer.view)
-                .subject(() => {console.log('a'); return this.force.find(d3.event.x, d3.event.y)})
+                .subject(() => this.force.find(d3.event.x, d3.event.y))
                 .on('start', () => {
-                    console.log('start');
                     if (!d3.event.active) this.force.alphaTarget(0.3).restart();
                     d3.event.subject.fx = d3.event.subject.x;
                     d3.event.subject.fy = d3.event.subject.y;
                 })
                 .on('drag', () => {
-                    console.log('drag');
                     d3.event.subject.fx = d3.event.x;
                     d3.event.subject.fy = d3.event.y;
                 })
                 .on('end', () => {
-                    console.log('end');
                     if (!d3.event.active) this.force.alphaTarget(0);
                     d3.event.subject.fx = null;
                     d3.event.subject.fy = null;

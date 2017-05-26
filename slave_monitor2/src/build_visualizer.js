@@ -13,6 +13,8 @@ let buildLineColor = rgb('#1F78C1');
 let buildFillColor = rgb('#1F2D3A');
 let buildLabelColor = rgb('#D8D9DA');
 
+let waitingStates = ['QUEUED', 'PREPARING', 'PREPARED'];
+
 
 class BuildNode {
     constructor(buildId, buildData = null, stage = null) {
@@ -172,35 +174,18 @@ class BuildVisualizer extends BaseVisualizer
         }
         updatedGraphNodesList.push(this._specialIdleNode);
         this._graphNodes = updatedGraphNodesList;
-        this._updateQueueVisualization(currentBuildIds);
+        this._queuedBuildNodes = this._generateQueuedBuildNodes();
         this._updateSvgElements();
         return graphStateChanged;
     }
 
-    _updateQueueVisualization(currentActiveBuildIds) {
-        // todo: move buildqueue to separate vis?
-        // copy the build queue data map so we can modify it
-        let datasourceData = this._buildQueueDatasource.data;
-        let queuedBuildsById = {};
-        Object.keys(datasourceData).forEach(function(queuedBuildId) {
-            queuedBuildsById[queuedBuildId] = datasourceData[queuedBuildId];
-        });
-        // iterate through active builds, deleting those from map
-        // wip: why is this necessary if we're filtering on QUEUED below? (can't be since there are also ERROR builds
-        for (let i = 0, l = currentActiveBuildIds.length; i < l; i++) {
-            delete queuedBuildsById[currentActiveBuildIds[i]];
-        }
-        let newQueuedBuildIds = Object.keys(queuedBuildsById);
+    _generateQueuedBuildNodes() {
         let nodes = [];
-        for (let i = 0, l = newQueuedBuildIds.length; i < l; i++) {
-            let queuedBuild = queuedBuildsById[newQueuedBuildIds[i]];
-            if (queuedBuild.status !== 'QUEUED') continue;  // ignore builds that don't have status QUEUED
-            nodes.push({
-                buildId: queuedBuild.id,
-                size: conf.queuedBuildSize
-            });
+        for (let buildData of Object.values(this._buildQueueDatasource.data)) {
+            if (!waitingStates.includes(buildData.status)) continue;  // ignore builds that are currently building
+            nodes.push(new BuildNode(buildData.id, buildData, this._stage));
         }
-        this._queuedBuildNodes = nodes;
+        return nodes;
     }
 
     _updateSvgElements() {
@@ -213,30 +198,22 @@ class BuildVisualizer extends BaseVisualizer
             .call(this.drag(this._force));
         let buildCircles = enterSelection
             .append('circle')
-            .attr('class', function(d) {
-                return 'buildCircle ' + (d.extraClass || '')
-            })
-            .attr('r', function(d) {
-                return d.size;
-            });
-        buildCircles.filter(function(d) {
-            return !d.preventQueueAnimation
-        })
+            .attr('class', d => 'buildCircle ' + (d.extraClass || ''))
+            .attr('r', d => d.size);
+        buildCircles
+            .filter(d => !d.preventQueueAnimation)
             .attr('class', '')  // remove class so we can animate properties
             .style('stroke-width', this._dummyQueuedBuildGraphic.style('stroke-width'))
             .style('fill', this._dummyQueuedBuildGraphic.style('fill'))
             .style('stroke', this._dummyQueuedBuildGraphic.style('stroke'))
             .style('stroke-dasharray', this._dummyQueuedBuildGraphic.style('stroke-dasharray'))
             .transition().duration(conf.buildTransitionEnterDuration)
-            .attr('r', function(d) {
-                d.size = conf.buildSize;
-                return d.size;
-            })  // need to reset d.size for collision
+            .each(d => d.size = conf.buildSize)
+            .attr('r', d => d.size)  // need to reset d.size for collision
             .style('stroke-width', this._dummyBuildCircle.style('stroke-width'))
             .style('fill', this._dummyBuildCircle.style('fill'))
             .style('stroke', this._dummyBuildCircle.style('stroke'))
             .style('stroke-dasharray', this._dummyBuildCircle.style('stroke-dasharray'))
-            // .each('end', function() {d3.select(this)
             .each(function() {
                 d3.select(this)
                     .attr('class', function(d) {
