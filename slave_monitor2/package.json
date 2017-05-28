@@ -22,7 +22,12 @@
   },
   "dependencies": {
     "d3": "^4.8.0",
-    "phaser-ce": "^2.7.9",
-    "pixi.js": "^4.5.1"
+    "pixi-multistyle-text": "^0.5.2",
+    "pixi.js": "<4.5.0"
+  }
+  ,
+  "//": {
+    "phaser-ce": "^2.7.9 not currently used",
+    "pixi.js uses <4.5.0 because I got a bunch of deprecation warnings in 4.5.1. See https://github.com/tleunen/pixi-multistyle-text/issues/44": ""
   }
 }

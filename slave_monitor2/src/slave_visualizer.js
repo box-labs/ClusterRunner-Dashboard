@@ -10,10 +10,16 @@ let busySlaveColor = rgb('#6CC644');
 let deadSlaveColor = rgb('#B10502');
 let slaveLabelColor = rgb('#AEAEAE');
 
+const SlaveState = Object.freeze({
+    DEAD: 'dead',
+    IDLE: 'idle',
+    BUSY: 'busy',
+});
 
 class SlaveNode {
     constructor(stage, slaveDatum, attractToNode) {
         this.type = 'slave';
+        this.state = null;
         this.slaveDatum = slaveDatum;
         this.x = conf.width / 2;
         this.y = conf.height / 2;  // initial position so it doesn't get stuck at 0,0
@@ -38,14 +44,36 @@ class SlaveNode {
     }
 
     update() {
-        let slaveIsMarkedDead = this.slaveDatum.is_alive === false;
-        let slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
+        let newState,
+            slaveIsMarkedDead = this.slaveDatum.is_alive === false,
+            slaveIsBusy = (this.slaveDatum.current_build_id || this.slaveDatum.num_executors_in_use > 0);
         if (slaveIsMarkedDead) {
-            this._setCircle(deadSlaveColor);
+            newState = SlaveState.DEAD;
         } else if (slaveIsBusy) {
-            this._setCircle(busySlaveColor);
+            newState = SlaveState.BUSY;
         } else {
-            this._setCircle(idleSlaveColor);
+            newState = SlaveState.IDLE;
+        }
+
+        if (this.state !== newState) {
+            this._updateState(newState);
+        }
+    }
+
+    _updateState(state) {
+        this.state = state;
+        switch (state) {
+            case SlaveState.DEAD:
+                this._setCircle(deadSlaveColor);
+                break;
+            case SlaveState.BUSY:
+                this._setCircle(busySlaveColor);
+                break;
+            case SlaveState.IDLE:
+                this._setCircle(idleSlaveColor);
+                break;
+            default:
+                throw new Error(`Invalid state "${state}"`);
         }
     }
 
@@ -64,7 +92,7 @@ class SlaveNode {
             fill: ['#ffffff'],
         });
 
-        let text = new PIXI.Text(this._getLabel(), style);
+        let text = new PIXI.Text(string, style);
         text.y = this.size;
         text.anchor.set(0.5, 0);
         this.gfx.addChild(text);
@@ -112,7 +140,6 @@ class SlaveVisualizer extends Visualizer
         this._slaveDatasource = slaveDatasource;
         this._buildVisualizer = buildVisualizer;
         this._slaveCircles = null;
-        this._slaveLabels = null;
         this._force = null;
         this._stage = null;
         this._width = null;
@@ -121,14 +148,13 @@ class SlaveVisualizer extends Visualizer
 
     init(g, force, stage, width, height) {
         this._g = g;
-        this._slaveCircles = g.selectAll('.slaveCircle');
-        this._slaveLabels = g.selectAll('.slaveLabel');
-        this._slaveToBuildLinks = g.selectAll('.slaveToBuildLinks');
+        // this._slaveCircles = g.selectAll('.slaveCircle');
+        this._slaveCircles = g.selectAll('fdsa');
         this._force = force;
         this._stage = stage;
         this._width = width;
         this._height = height;
-    };
+    }
 
     update() {
         // Note: We have to persist the same node objects in between updates (instead of recreating them on each update).
@@ -209,7 +235,7 @@ class SlaveVisualizer extends Visualizer
         this._graphLinks = graphLinks;
         this._updateGraphics();
         return graphStateChanged;
-    };
+    }
 
     _updateGraphics() {
         this._slaveCircles = this._slaveCircles.data(
@@ -220,13 +246,16 @@ class SlaveVisualizer extends Visualizer
         this._slaveCircles = this._slaveCircles
             .enter().merge(this._slaveCircles)
             .each(d => d.update());
-    };
+    }
 
     /**
      * Update the positions of SVG elements managed by this visualizer.
      * @param alpha
      */
     tick(alpha) {
+        // for (let node of this._graphNodes) {
+        //     node.gfx.rotation = (node.gfx.rotation + (Math.random() / 5)) % (2 * Math.PI);
+        // }
         // partition slave nodes into groups based on build
         let slaveGroupsByBuild = {};
         for (let i = 0, l = this._graphLinks.length; i < l; i++) {
@@ -256,7 +285,7 @@ class SlaveVisualizer extends Visualizer
                 })
             });
         });
-    };
+    }
 }
 
 export default SlaveVisualizer;

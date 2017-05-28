@@ -18,6 +18,7 @@ class SlaveMonitor {
         this._repoNameRegex = repoNameRegex;
         this.force = null;
         let _this = this;
+        this._app = null;
         this._renderer = null;
         this._stage = null;
         Network.setErrorCallback(function(url, apiError) {
@@ -99,8 +100,6 @@ class SlaveMonitor {
                         node.gfx.position = new PIXI.Point(node.x, node.y);
                     }
                 });
-
-                _this._renderer.render(_this._stage);
             })
         ;
         d3.select(this._renderer.view)
@@ -154,13 +153,22 @@ class SlaveMonitor {
     }
 
     _init_pixi(width, height) {
-        let scale = window.devicePixelRatio;
-        this._stage = new PIXI.Container();
-        this._renderer = PIXI.autoDetectRenderer(width, height, {
+        let scale = window.devicePixelRatio + 0.5;
+        // this._stage = new PIXI.Container();
+        // this._renderer = PIXI.autoDetectRenderer(width, height, {
+        //     antialias: true,
+        //     transparent: true,
+        //     resolution: scale,
+        // });
+
+        this._app = new PIXI.Application(width, height, {
             antialias: true,
             transparent: true,
             resolution: scale,
         });
+        this._renderer = this._app.renderer;
+        this._stage = this._app.stage;
+
         this._container.node().appendChild(this._renderer.view);
         d3.select(this._renderer.view).style('width', width + 'px').style('height', height + 'px');
         // this._container.append(d3.select(this._renderer.view));
