@@ -29,6 +29,7 @@ class SlaveNode {
         this.attractToNode = attractToNode;
 
         this.gfx = new PIXI.Graphics();
+        this.gfx.zIndex = 1;
         this._setText(this._getLabel());
         stage.addChild(this.gfx);
         this.remove = () => stage.removeChild(this.gfx);

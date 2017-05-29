@@ -9,6 +9,7 @@ import {Log} from './log';
 import {Network} from './network';
 import {SlavesListDatasource} from './slaves_list_datasource';
 import SlaveVisualizer from './slave_visualizer';
+import TWEEN from 'tween.js';
 
 
 class SlaveMonitor {
@@ -82,6 +83,7 @@ class SlaveMonitor {
                 })
             )
             .on('tick', function() {
+                TWEEN.update();
                 let alpha = _this.force.alpha();
                 let nodes = [];
                 visualizers.map(function(visualizer) {
@@ -121,7 +123,6 @@ class SlaveMonitor {
                     d3.event.subject.fy = null;
                 }));
 
-
         function update() {
             setTimeout(update, conf.updateFrequencyMs);
             let nodes = [], links = [];
@@ -134,17 +135,17 @@ class SlaveMonitor {
 
             //d3 removes all existing click handlers on an element before adding a
             // new one. https://github.com/mbostock/d3/wiki/Selections#on
-            d3.selectAll('.slaveCircle').on('click', function(e, i) {  // todo: fix for canvas
-                window.open('http://' + e.slaveDatum.url + '/v1', '');
-            });
+            // d3.selectAll('.slaveCircle').on('click', function(e, i) {  // todo: fix for canvas
+            //     window.open('http://' + e.slaveDatum.url + '/v1', '');
+            // });
             if (graphStateChanged) {
+                _this._app.stage.children.sort((a, b) => a.zIndex - b.zIndex);
                 _this.force.nodes(nodes);
                 _this.force.force('link').links(links);
                 _this.force.alpha(1);
                 _this.force.restart();
             }
         }
-
 
         visualizers.forEach(function(visualizer) {
             visualizer.init(g, _this.force, _this._stage, conf.width, conf.height)
@@ -180,7 +181,6 @@ class SlaveMonitor {
         // most of the below implementation is stolen from d3 examples, with minor edits.
         // see http://bl.ocks.org/mbostock/3231298
         let quadtree = d3.quadtree(nodes, function(d){return d.x;}, function(d){return d.y;});
-        // let quadtree = d3.quadtree(nodes);
         let padding = conf.collisionPadding;
         let collisionConstant = conf.collisionConstant;
         nodes.map(function(nodeA) {

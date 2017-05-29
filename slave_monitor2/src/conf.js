@@ -16,7 +16,8 @@ let conf = {
     },
 
     gravity: 0.004,
-    updateFrequencyMs: 5000,
+    // updateFrequencyMs: 5000,
+    updateFrequencyMs: 3500,
     collisionPadding: 3,
     collisionConstant: 0.5,  // should be between 0 and 1
     // slaveEmbedAmount: 65,

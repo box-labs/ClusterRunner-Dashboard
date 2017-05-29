@@ -35,10 +35,10 @@ Log.setLevel(Log.DEBUG);
 // Log.setLevel(Log.WARNING);
 if (window.DEBUG_MODE) {
     Log.setLevel(Log.DEBUG);
-    // FakeData.beginAutoRepeatingProgression();
-    FakeData.progressDataSequence();
-    FakeData.progressDataSequence();
-    FakeData.progressDataSequence();
+    FakeData.beginAutoRepeatingProgression();
+    // FakeData.progressDataSequence();
+    // FakeData.progressDataSequence();
+    // FakeData.progressDataSequence();
 }
 
 window.d3 = d3;

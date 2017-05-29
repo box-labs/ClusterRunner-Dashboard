@@ -24,6 +24,7 @@ let slavesList = all_urls.map(function(url, i) {
     };
 });
 
+let jobNameIndex = 0;
 let exampleJobNames = [
     'PHPUnit',
     'Specs2',
@@ -33,7 +34,10 @@ let exampleJobNames = [
 ];
 
 function randomJobName() {
-    return exampleJobNames[Math.floor(Math.random() * exampleJobNames.length)];
+    let name = exampleJobNames[jobNameIndex];
+    jobNameIndex = (jobNameIndex + 1) % exampleJobNames.length;
+    return name;
+    // return exampleJobNames[Math.floor(Math.random() * exampleJobNames.length)];
 }
 
 let buildQueue = [

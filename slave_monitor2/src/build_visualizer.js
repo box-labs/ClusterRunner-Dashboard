@@ -5,6 +5,8 @@ import BaseVisualizer from './base_visualizer';
 import {rgb} from './util';
 import * as PIXI from 'pixi.js';
 import MultiStyleText from 'pixi-multistyle-text';
+import TWEEN from 'tween.js';
+// import GlowFilter from './glow_filter';
 
 
 let IDLE = 'IDLE';  // a special identifier to represent the null build
@@ -31,8 +33,11 @@ class BaseBuildNode {
         this.size = conf.buildSize;  // start with small queued build size (we'll animate to full size)
         this.state = null;
         this.wallRepelForce = conf.buildWallRepelForce;
-        this.x = conf.queuedBuildSize + 5;
-        this.y = conf.height + conf.queuedBuildSize + 5;
+        this.index = null;
+        // this.x = conf.queuedBuildSize + 5;
+        // this.y = conf.height + conf.queuedBuildSize + 5;
+        // this.x = 400;
+        // this.y = 400;
         this.shouldUpdateElapsedTime = true;
         this.numAttractedSlaves = 0;
         this.jobName = buildData.request_params && buildData.request_params.job_name;
@@ -56,15 +61,18 @@ class BaseBuildNode {
 class BuildNode extends BaseBuildNode {
     constructor(buildData, stage) {
         super(buildData);
+
         this.gfx = new PIXI.Graphics();
+        this.gfx.zIndex = 0;
         stage.addChild(this.gfx);
         this.remove = () => stage.removeChild(this.gfx);
 
-        this.text = new MultiStyleText('', this._getTextStyles());
-        this.text.anchor.set(0, 0.3);
-        this.text.x = -0.5 * this.size;
+        this.label = new MultiStyleText('', this._getTextStyles());
+        // this.label.filters = [
+        //     new GlowFilter(conf.width, conf.height)
+        // ];
+        this.gfx.addChild(this.label);
         this.updateLabel();
-        this.gfx.addChild(this.text);
     }
 
     update() {
@@ -81,40 +89,63 @@ class BuildNode extends BaseBuildNode {
         }
     }
 
+    _updateState(state) {
+        this.state = state;
+        switch (state) {
+            case BuildState.WAITING:
+                this.size = conf.queuedBuildSize;
+                this.gfx.position.x = this.size * 5;
+                // this.gfx.position.x = this.size + 5;
+                this.gfx.position.y = conf.height + (2 * this.index + 1) * (conf.queuedBuildSize + 5);
+                this.label.anchor.set(0.5, 0.5);
+                this.label.x = 0;
+
+                // Animate queued builds moving up from off bottom of screen.
+                new TWEEN.Tween(this.gfx.position)
+                    .to({y: (2 * this.index + 1) * (conf.queuedBuildSize + 5) }, 1000)
+                    .delay(150 * this.index)
+                    .easing(TWEEN.Easing.Cubic.InOut)
+                    .start();
+
+                this._redraw({strokeWidth: 1});
+                this.updateLabel();
+                break;
+
+            case BuildState.BUILDING:
+                this.size = conf.buildSize;
+                this.label.anchor.set(0, 0.3);
+                this.label.x = -0.5 * this.size;
+                this._redraw();
+                this.updateLabel();
+                break;
+
+            default:
+                throw new Error(`Invalid state "${state}"`);
+        }
+    }
+
+    _redraw({strokeWidth = 2} = {}) {
+        this.gfx.clear();
+        this.gfx.lineStyle(strokeWidth, buildLineColor);
+        this.gfx.beginFill(buildFillColor);
+        this.gfx.drawCircle(0, 0, this.size);
+    }
+
     updateLabel() {
-        let elapsedTotalSecs = Math.round((new Date().getTime() / 1000) - this.startTime);
-        let elapsedTime = _formatTimeDuration(elapsedTotalSecs);
-        this.text.text =
-`#${this.buildId}
+        if (this.state === BuildState.BUILDING) {
+            let elapsedTotalSecs = Math.round((new Date().getTime() / 1000) - this.startTime);
+            let elapsedTime = _formatTimeDuration(elapsedTotalSecs);
+            this.label.text = `#${this.buildId}
 <micro> </micro>
 <heavySmall>${this.jobName}</heavySmall>
 <small>${this.repoName}</small>
 <micro> </micro>
 <tiny>Elapsed:</tiny>
 <small>${elapsedTime}</small>`;
-    }
-
-    _updateState(state) {
-        this.state = state;
-        switch (state) {
-            case BuildState.WAITING:
-                this.size = conf.queuedBuildSize;
-                this._redraw();
-                break;
-            case BuildState.BUILDING:
-                this.size = conf.buildSize;
-                this._redraw();
-                break;
-            default:
-                throw new Error(`Invalid state "${state}"`);
         }
-    }
-
-    _redraw() {
-        this.gfx.clear();
-        this.gfx.lineStyle(2, buildLineColor);
-        this.gfx.beginFill(buildFillColor, 0.9);
-        this.gfx.drawCircle(0, 0, this.size);
+        else if (this.state === BuildState.WAITING) {
+            this.label.text = `<smaller>${this.buildId}</smaller>`;
+        }
     }
 
     _getTextStyles() {
@@ -127,6 +158,7 @@ class BuildNode extends BaseBuildNode {
             },
             heavySmall: {fontWeight: 'bold', fontSize: '14px'},
             small: {fontSize: '15px'},
+            smaller: {fontSize: '10px'},
             tiny: {fontSize: '8px'},
             micro: {fontSize: '5px'},
         };
@@ -176,7 +208,7 @@ class BuildVisualizer extends BaseVisualizer
         this._slaveDatasource = slaveDatasource;
         this._buildQueueDatasource = buildQueueDatasource;
         this._repoNameRegex = repoNameRegex;
-        this._queuedBuildNodes = [];  // keep track of these separately from this._graphNodes since the queue is not part of the graph
+        this._queuedBuildNodesById = {};  // keep track of these separately from this._graphNodes since the queue is not part of the graph
         this._force = null;
         this._stage = null;
         this._width = null;
@@ -185,7 +217,7 @@ class BuildVisualizer extends BaseVisualizer
 
     init(g, force, stage, width, height) {
         // create selections
-        this._buildGraphicGroups = g.selectAll('.buildGraphicGroup');
+        // this._buildGraphicGroups = g.selectAll('.buildGraphicGroup');
         this._buildLabels = g.selectAll('.buildLabel');
         this._queuedBuildGraphics = g.selectAll('.queuedBuildGraphic');
         this._queuedBuildLabels = g.selectAll('.queuedBuildLabel');
@@ -211,8 +243,16 @@ class BuildVisualizer extends BaseVisualizer
     }
 
     update() {
+        let graphStateChanged = this._generateGraphNodes();
+        this._generateQueuedBuildNodes();
+        this._updateSvgElements();
+        return graphStateChanged;
+    }
+
+    _generateGraphNodes() {
         // Create or remove any nodes or links based on the current datasource data, then update svg representations.
         let graphStateChanged = false;
+
         // Get a list of current build ids from the slave datasource.
         // todo: get this from the BUILDING builds in the queue datasource (and maybe supplement with slave datasource?)
         let currentActiveSlaveData = Object.values(this._slaveDatasource.data)
@@ -233,7 +273,6 @@ class BuildVisualizer extends BaseVisualizer
             if (this._graphNodes[i] === this._specialIdleNode) continue;  // ignore this special node when detecting changes
             graphNodesByBuildId[this._graphNodes[i].buildId] = this._graphNodes[i];
         }
-
         // Compare the old build ids and new build ids to see if the force graph has changed.
         let oldBuildIds = Object.keys(graphNodesByBuildId).sort();
         graphStateChanged = !this.areArraysSame(oldBuildIds, currentBuildIds) || graphStateChanged;
@@ -246,6 +285,10 @@ class BuildVisualizer extends BaseVisualizer
                 // if we already have a node for this id, just update that object instead of replacing it (the object has extra positioning data that we want to preserve)
                 updatedGraphNodesList.push(graphNodesByBuildId[buildId]);
             }
+            else if (buildId in this._queuedBuildNodesById) {
+                // this was previously queued and is now building so we should preserve the node
+                updatedGraphNodesList.push(this._queuedBuildNodesById[buildId]);
+            }
             else if (buildId in this._buildQueueDatasource.data) {
                 // otherwise this is a new graph node
                 let buildData = this._buildQueueDatasource.data[buildId];
@@ -254,22 +297,32 @@ class BuildVisualizer extends BaseVisualizer
         }
         updatedGraphNodesList.push(this._specialIdleNode);
         this._graphNodes = updatedGraphNodesList;
-        this._queuedBuildNodes = this._generateQueuedBuildNodes();
-        this._updateSvgElements();
         return graphStateChanged;
     }
 
     _generateQueuedBuildNodes() {
-        let nodes = [];
+        let nodes = {},
+            node = null,
+            i = 0;
         for (let buildData of Object.values(this._buildQueueDatasource.data)) {
-            if (!waitingStates.includes(buildData.status)) continue;  // ignore builds that are currently building
-            nodes.push(new BuildNode(buildData, this._stage));
+            if (!waitingStates.includes(buildData.status)) {
+                continue;  // ignore builds that are currently building
+            }
+            if (buildData.id in this._queuedBuildNodesById) {
+                node = this._queuedBuildNodesById[buildData.id];
+            } else {
+                node = new BuildNode(buildData, this._stage);
+            }
+            node.index = i++;
+            node.update();
+            nodes[buildData.id] = node;
         }
-        return nodes;
+        this._queuedBuildNodesById = nodes;
     }
 
     _updateGraphics() {
-        this._buildGraphics = this._buildGraphics.data(this._graphNodes, d => d.buildId);
+        let allNodes = this._graphNodes.concat(Object.values(this._queuedBuildNodesById));
+        this._buildGraphics = this._buildGraphics.data(allNodes, d => d.buildId);
         this._buildGraphics.exit()
             .each(d => d.remove());
         this._buildGraphics = this._buildGraphics
@@ -278,11 +331,11 @@ class BuildVisualizer extends BaseVisualizer
     }
 
     _updateSvgElements() {
-        this._buildGraphicGroups = this._buildGraphicGroups.data(this._graphNodes, d => d.buildId);
-        let enterSelection = this._buildGraphicGroups.enter()
-            .insert('g', '.slaveCircle')  // insert before .slaveCircle to show slaves on top
-            .attr('class', 'buildGraphicGroup')
-            .call(this.drag(this._force));
+        // this._buildGraphicGroups = this._buildGraphicGroups.data(this._graphNodes, d => d.buildId);
+        // let enterSelection = this._buildGraphicGroups.enter()
+        //     .insert('g', '.slaveCircle')  // insert before .slaveCircle to show slaves on top
+        //     .attr('class', 'buildGraphicGroup')
+        //     .call(this.drag(this._force));
         // let buildCircles = enterSelection
         //     .append('circle')
         //     .attr('class', d => 'buildCircle ' + (d.extraClass || ''))
@@ -367,22 +420,23 @@ class BuildVisualizer extends BaseVisualizer
         //         };
         //         setTimeout(updateFunc, 1000);
         //     });
-        let exitSelection = this._buildGraphicGroups.exit();
-        exitSelection
-            .transition().duration(conf.buildTransitionExitDuration)
-            .attr('transform', (d) => 'translate(' + d.x + ', ' + conf.buildGraphicsPosYExit + ')')
-            .remove();
-        exitSelection.selectAll('circle')
-            .transition().duration(conf.buildTransitionExitDuration)
-            .attr('class', 'buildGraphicGroup completed')
-            .style('fill', 'rgb(166, 216, 84)');
-        exitSelection.selectAll('.buildTime')
-            .text(function(d) {
-                d.shouldUpdateElapsedTime = false;  // this prevents the updating setTimeout loop from going forever
-                return 'Completed!';
-            });
-        this._buildGraphicGroups = enterSelection.merge(this._buildGraphicGroups);
-        this._queuedBuildGraphics = this._queuedBuildGraphics.data(this._queuedBuildNodes, d => d.buildId);
+        // let exitSelection = this._buildGraphicGroups.exit();
+        // exitSelection
+        //     .transition().duration(conf.buildTransitionExitDuration)
+        //     .attr('transform', (d) => 'translate(' + d.x + ', ' + conf.buildGraphicsPosYExit + ')')
+        //     .remove();
+        // exitSelection.selectAll('circle')
+        //     .transition().duration(conf.buildTransitionExitDuration)
+        //     .attr('class', 'buildGraphicGroup completed')
+        //     .style('fill', 'rgb(166, 216, 84)');
+        // exitSelection.selectAll('.buildTime')
+        //     .text(function(d) {
+        //         d.shouldUpdateElapsedTime = false;  // this prevents the updating setTimeout loop from going forever
+        //         return 'Completed!';
+        //     });
+        // this._buildGraphicGroups = enterSelection.merge(this._buildGraphicGroups);
+
+        this._queuedBuildGraphics = this._queuedBuildGraphics.data(Object.values(this._queuedBuildNodesById), d => d.buildId);
         this._queuedBuildGraphics.exit()
             .remove();  // just remove this element -- this._buildGraphicGroups creates a new element in its place
         this._queuedBuildGraphics
@@ -414,12 +468,13 @@ class BuildVisualizer extends BaseVisualizer
                 return d.y;
             });  // animate upward from offscreen
         this._queuedBuildGraphics = enterQueuedBuilds.merge(this._queuedBuildGraphics);
-        this._queuedBuildLabels = this._queuedBuildLabels.data(this._queuedBuildNodes, d => d.buildId);
+
+        this._queuedBuildLabels = this._queuedBuildLabels.data(Object.values(this._queuedBuildNodesById), d => d.buildId);
         this._queuedBuildLabels
             .transition().duration(300)
             .attr('x', conf.queuedBuildSize + 5)
             .attr('y', (d, i) => (2 * i + 1) * (conf.queuedBuildSize + 5) + 4);
-        enterSelection = this._queuedBuildLabels.enter().append('text')
+        let enterSelection = this._queuedBuildLabels.enter().append('text')
             .attr('class', 'queuedBuildLabel')
             .attr('text-anchor', 'middle')
             .attr('x', conf.queuedBuildSize + 5)
@@ -445,10 +500,10 @@ class BuildVisualizer extends BaseVisualizer
         this._specialIdleNode.x += extraGravity * (this._width / 2 - this._specialIdleNode.x);
         this._specialIdleNode.y += extraGravity * (this._height / 2 - this._specialIdleNode.y);
         // update positions of build graphics
-        this._buildGraphicGroups
-            .attr('transform', function(d) {
-                return 'translate(' + d.x + ', ' + d.y + ')'
-            });
+        // this._buildGraphicGroups
+        //     .attr('transform', function(d) {
+        //         return 'translate(' + d.x + ', ' + d.y + ')'
+        //     });
     }
 }
 
