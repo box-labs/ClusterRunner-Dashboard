@@ -118,8 +118,8 @@ cls.update = function()
                 shouldUpdateElapsedTime: true,
                 numAttractedSlaves: 0
             };
-            // search the queued nodes to see if we've already drawn this build, so we can have position continuity
-            // todo: is this needed? would this be handled by the above if block?
+            // search the queued nodes to see if we've already drawn this build, so we can have position continuity.
+            // this is necessary since queuedBuildNodes were not previously part of the force graph.
             for (var j = 0, jMax = this._queuedBuildNodes.length; j < jMax; j++) {
                 var queuedBuildNode = this._queuedBuildNodes[j];
                 if (queuedBuildNode.buildId == buildId) {

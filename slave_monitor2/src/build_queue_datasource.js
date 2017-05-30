@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 
 import {conf} from './conf';
-import {FakeData} from './fake_data';
+import * as FakeData from './fake_data';
 import {Log} from './log';
 import {Network} from './network';
 

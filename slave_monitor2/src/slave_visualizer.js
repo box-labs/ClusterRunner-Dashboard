@@ -3,6 +3,7 @@ import {conf} from './conf';
 import {rgb} from './util';
 import Visualizer from './base_visualizer';
 import * as PIXI from "pixi.js";
+import {IDLE} from './build_visualizer';
 
 
 let idleSlaveColor = rgb('#34692C');
@@ -150,11 +151,14 @@ class SlaveVisualizer extends Visualizer
     init(g, force, stage, width, height) {
         this._g = g;
         // this._slaveCircles = g.selectAll('.slaveCircle');
-        this._slaveCircles = g.selectAll('fdsa');
+        this._slaveCircles = g.selectAll('nonexistent-element');  // hacky but don't know a workaround
         this._force = force;
         this._stage = stage;
         this._width = width;
         this._height = height;
+
+        // console.groupCollapsed();
+        // for ()
     }
 
     update() {
@@ -184,7 +188,7 @@ class SlaveVisualizer extends Visualizer
         for (let i = 0, l = newSlaveIds.length; i < l; i++) {
             let slaveId = newSlaveIds[i];
             let slaveDatum = this._slaveDatasource.data[slaveId];
-            let attractToNode = currentBuildNodesById[slaveDatum.current_build_id] || currentBuildNodesById['IDLE'];  // may be undefined
+            let attractToNode = currentBuildNodesById[slaveDatum.current_build_id] || currentBuildNodesById[IDLE];
             let graphNode;
             if (slaveId in graphNodesBySlaveId) {
                 // if we already have a node for this slaveId, just update that object instead of replacing it (the object has extra positioning data that we want to preserve)

@@ -4,7 +4,7 @@ import {dashboard_conf} from './dashboard_conf';
 import {conf} from './conf';
 import {SlaveMonitor} from './slave_monitor';
 import {Log} from './log';
-import {FakeData} from './fake_data';
+import * as FakeData from './fake_data';
 
 // $apiProxyUrl = $_SERVER['HTTP_HOST'] . '/api.php';  // proxy requests through this host
 
@@ -40,6 +40,16 @@ if (window.DEBUG_MODE) {
     // FakeData.progressDataSequence();
     // FakeData.progressDataSequence();
 }
+
+// let o = {a: 1, b: 2, c: 3};
+// for (let [k, v] of Object.entries(o)) {
+//     console.log(`k:${k}, v:${v}`);
+// }
+
+// let o = {a: 1, b: 2, c: 3};
+// for (let v of Object.values(o)) {
+//     console.log(`v:${v}`);
+// }
 
 window.d3 = d3;
 window.FakeData = FakeData;

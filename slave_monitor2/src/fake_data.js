@@ -89,9 +89,20 @@ function queueBuild() {
 }
 
 function finishBuild(buildId) {
-    // mark all its slaves idle and remove from the queue
-    // todo: find out what happens to a build in the queue right after all slaves leave it
-        // does it stay there for a bit? if so, do we need to completely filter out all "BUILDING" status builds?
+    // mark all slaves working on this build as idle
+    for (let slave of slavesList) {
+        if (slave.current_build_id === buildId) {
+            slave.num_executors_in_use = 0;
+            slave.current_build_id = null;
+        }
+    }
+    // remove build from buildQueue
+    for (let i = 0, l = buildQueue.length; i < l; i++) {
+        if (buildQueue[i].id === buildId) {
+            buildQueue.splice(i, 1);
+            break;
+        }
+    }
 }
 
 
@@ -142,6 +153,7 @@ function markSlavesBusy(slaveIdsToMark, buildId, numBusyExecutors) {
             if (build.id === buildId) {
                 build.status = 'BUILDING';
                 build.state_timestamps.building = Date.now()/1000;
+                console.log(`${buildId}: ${build.state_timestamps.building}`)
             }
         });
     }
@@ -224,6 +236,8 @@ let sequenceB = [
         resetAllSlavesToIdle();
         buildIdA = queueBuild();
         buildIdB = queueBuild();
+    },
+    function() {
         markSlavesBusy(range(1, 2), buildIdA);
     },
     function() {
@@ -235,15 +249,21 @@ let sequenceB = [
         markSlavesBusy(range(28, 51), buildIdC);
     },
     function() {
-        markSlavesIdle(range(1, 26));
+        finishBuild(buildIdA);
+        markSlavesIdle(range(3, 26));
     },
     function() {
-        markSlavesIdle(range(21, 40));
+        finishBuild(buildIdB);
+        markSlavesIdle(range(28, 40));
         markSlavesBusy(range(1, 24), buildIdD);
         markSlavesBusy(range(25, 40), buildIdE);
         markSlavesBusy(range(52, 72), buildIdF);
     },
     function() {
+        finishBuild(buildIdC);
+        finishBuild(buildIdD);
+        finishBuild(buildIdE);
+        finishBuild(buildIdF);
         resetAllSlavesToIdle();
     },
     function() {
@@ -292,12 +312,12 @@ function getFakeBuildQueue() {
     return buildQueue;
 }
 
-let FakeData = {};
-FakeData.progressDataSequence = progressDataSequence;
-FakeData.beginAutoRepeatingProgression = beginAutoRepeatingProgression;
-FakeData.setAutoProgress = setAutoProgress;
-FakeData.getFakeSlavesList = getFakeSlavesList;
-FakeData.getFakeBuildQueue = getFakeBuildQueue;
-FakeData.toggleAll = toggleAll;
-FakeData.setProgressionIndex = setProgressionIndex;
-export {FakeData};
+export {
+    progressDataSequence,
+    beginAutoRepeatingProgression,
+    setAutoProgress,
+    getFakeSlavesList,
+    getFakeBuildQueue,
+    toggleAll,
+    setProgressionIndex,
+};

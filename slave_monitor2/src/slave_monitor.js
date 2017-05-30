@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import * as PIXI from "pixi.js";
 
 import BuildQueueDatasource from './build_queue_datasource';
-import BuildVisualizer from './build_visualizer';
+import {BuildVisualizer} from './build_visualizer';
 import {conf} from './conf';
 import {Log} from './log';
 import {Network} from './network';
