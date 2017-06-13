@@ -1,7 +1,7 @@
 
 import {conf} from './conf';
 import {rgb} from './util';
-import Visualizer from './base_visualizer';
+import {BaseVisualizer} from './base_visualizer';
 import * as PIXI from "pixi.js";
 import {IDLE} from './build_visualizer';
 
@@ -135,7 +135,7 @@ class SlaveNode {
 }
 
 
-class SlaveVisualizer extends Visualizer
+class SlaveVisualizer extends BaseVisualizer
 {
     constructor(slaveDatasource, buildVisualizer) {
         super();

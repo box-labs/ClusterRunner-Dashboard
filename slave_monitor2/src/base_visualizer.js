@@ -1,12 +1,12 @@
 import * as d3 from 'd3';
 
 
-function Visualizer()
+function BaseVisualizer()
 {
     this._graphNodes = [];
     this._graphLinks = [];
 }
-var cls = Visualizer.prototype;
+var cls = BaseVisualizer.prototype;
 
 cls.getNodes = function()
 {
@@ -65,4 +65,6 @@ cls.update = function(){notImplemented('update')};
 cls.tick = function(){notImplemented('tick')};
 
 
-export default Visualizer;
+export {
+    BaseVisualizer,
+};
