@@ -2,8 +2,12 @@ import * as d3 from 'd3';
 
 import {conf} from './conf';
 import * as FakeData from './fake_data';
+import {ListRecording} from "./list_recording";
 import {Log} from './log';
 import {Network} from './network';
+
+
+let queueRecording = window.queueRecording =new ListRecording('queueRecording.json');
 
 
 function BuildQueueDatasource(masterUrl)
@@ -21,7 +25,7 @@ cls.start = function()
     function updateData() {
 
         function handleData(apiData) {
-            // Log.info('BuildQueueDatasource.handleData()');
+            Log.debug('BuildQueueDatasource.handleData()');
             let newData = apiData['queue'];
 
             // Remove all elements from the current data object
@@ -35,11 +39,18 @@ cls.start = function()
                 let build = newData[i];
                 _this.data[build['id']] = build;
             }
+            if (window.RECORD_MODE) {
+                queueRecording.append(newData);
+            }
         }
 
         if (window.DEBUG_MODE) {
             handleData({queue: FakeData.getFakeBuildQueue()});
-        } else {
+        }
+        else if (window.PLAYBACK_MODE) {
+            handleData({queue: queueRecording.next()});
+        }
+        else {
             _this._network.get(_this._apiUrl, handleData);
         }
     }

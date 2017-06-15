@@ -2,8 +2,12 @@ import * as d3 from 'd3';
 
 import {conf} from './conf';
 import * as FakeData from './fake_data';
+import {ListRecording} from "./list_recording";
 import {Log} from './log';
 import {Network} from './network';
+
+
+let slaveRecording = window.slaveRecording = new ListRecording('slaveRecording.json');
 
 
 class SlavesListDatasource {
@@ -23,7 +27,7 @@ class SlavesListDatasource {
 
     _updateData() {
         let handleData = (apiData) => {
-            // Log.info('SlavesListDatasource.handleData()');
+            Log.debug('SlavesListDatasource.handleData()');
             let newData = apiData['slaves'];
             this.data = {};
             // Add all elements in newData to the existing data object
@@ -35,10 +39,16 @@ class SlavesListDatasource {
                 }
                 this.data[slave['id']] = slave;
             }
+            if (window.RECORD_MODE) {
+                slaveRecording.append(newData);
+            }
         };
 
         if (window.DEBUG_MODE) {
             handleData({slaves: FakeData.getFakeSlavesList()});
+        }
+        else if (window.PLAYBACK_MODE) {
+            handleData({slaves: slaveRecording.next()});
         }
         else {
             this._network.get(this._slaveApiUrl, handleData);

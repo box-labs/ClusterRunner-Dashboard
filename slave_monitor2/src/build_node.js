@@ -212,4 +212,7 @@ export {
     BuildNode,
     IDLE,
     IdleSlaveNode,
+    waitingStates,
+    buildingStates,
+    BuildState,
 };

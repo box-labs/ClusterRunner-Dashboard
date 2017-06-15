@@ -1,7 +1,14 @@
 'use strict';
 
 import {BaseVisualizer} from './base_visualizer';
-import {BuildNode, IDLE, IdleSlaveNode} from './build_node';
+import {
+    BuildNode,
+    IDLE,
+    IdleSlaveNode,
+    waitingStates,
+    buildingStates,
+    BuildState,
+} from './build_node';
 
 
 let extraGravity = 0.01;
