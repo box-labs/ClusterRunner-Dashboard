@@ -41,7 +41,7 @@ class SlaveMonitor {
         let buildVisualizer = new BuildVisualizer(slaveDatasource, buildQueueDatasource, this._repoNameRegex);
         let slaveVisualizer = new SlaveVisualizer(slaveDatasource, buildVisualizer);
         // the order of this array matters! dependent visualizations should come after dependees.
-        this._startVisualization([buildVisualizer, slaveVisualizer]);
+        // this._startVisualization([buildVisualizer, slaveVisualizer]);
     };
 
     _startVisualization(visualizers) {

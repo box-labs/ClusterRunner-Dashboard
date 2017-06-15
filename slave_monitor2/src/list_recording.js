@@ -151,8 +151,8 @@ export class ListRecording {
 
                 let datumDiff = {};
                 for (let [key, newVal] of Object.entries(toDatum)) {
-                    if (key in fromDatum && !this._keyBlacklist.includes(key)) {
-                        if (!compareObjs(fromDatum[key], newVal)) {
+                    if (key in fromDatum) {
+                        if (!this._keyBlacklist.includes(key) && !compareObjs(fromDatum[key], newVal)) {
                             datumDiff[key] = newVal;  // key update
                         }
                         delete fromDatum[key];  // this key has been accounted for
