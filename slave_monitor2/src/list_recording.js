@@ -1,6 +1,23 @@
 
 let UNSET = '__UNSET__';  // don't use a Symbol since we want recordings to be serializable for download.
 
+function compareObjs(o1, o2) {
+    let keys1 = Object.keys(o1);
+    let keys2 = Object.keys(o2);
+    if (keys1.length !== keys2.length) return false;
+    for (let k of keys1) {
+        switch (typeof o1[k]) {
+            case 'object':
+                if (!compareObjs(o1[k], o2[k])) return false;
+                break;
+            default:
+                if (o1[k] !== o2[k]) return false;
+        }
+    }
+    return true;
+}
+
+
 export class ListRecording {
 
     constructor(fileName = null, diffKey = 'id') {
@@ -132,7 +149,7 @@ export class ListRecording {
                 let datumDiff = {};
                 for (let [key, newVal] of Object.entries(toDatum)) {
                     if (key in fromDatum) {
-                        if (fromDatum[key] !== newVal) {
+                        if (!compareObjs(fromDatum[key], newVal)) {
                             datumDiff[key] = newVal;  // key update
                         }
                         delete fromDatum[key];  // this key has been accounted for
