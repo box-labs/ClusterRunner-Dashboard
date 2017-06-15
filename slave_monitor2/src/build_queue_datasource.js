@@ -7,7 +7,7 @@ import {Log} from './log';
 import {Network} from './network';
 
 
-let queueRecording = window.queueRecording =new ListRecording('queueRecording.json');
+let queueRecording = window.queueRecording = new ListRecording('queueRecording.json', ['details']);
 
 
 function BuildQueueDatasource(masterUrl)

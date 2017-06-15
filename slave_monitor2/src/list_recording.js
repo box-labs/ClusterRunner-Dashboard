@@ -2,17 +2,19 @@
 let UNSET = '__UNSET__';  // don't use a Symbol since we want recordings to be serializable for download.
 
 function compareObjs(o1, o2) {
-    let keys1 = Object.keys(o1);
-    let keys2 = Object.keys(o2);
-    if (keys1.length !== keys2.length) return false;
-    for (let k of keys1) {
-        switch (typeof o1[k]) {
-            case 'object':
+    if (o1 === o2) return true;
+    if (typeof o1 !== typeof o2) return false;
+    switch (typeof o1) {
+        case 'object':
+            let keys1 = Object.keys(o1);
+            let keys2 = Object.keys(o2);
+            if (keys1.length !== keys2.length) return false;
+            for (let k of keys1) {
                 if (!compareObjs(o1[k], o2[k])) return false;
-                break;
-            default:
-                if (o1[k] !== o2[k]) return false;
-        }
+            }
+            break;
+        default:
+            if (o1 !== o2) return false;
     }
     return true;
 }
@@ -20,9 +22,10 @@ function compareObjs(o1, o2) {
 
 export class ListRecording {
 
-    constructor(fileName = null, diffKey = 'id') {
+    constructor(fileName = null, keyBlacklist = [], diffKey = 'id') {
         this._recording = [];  // list of steps that make up the recording (see this.append())
         this._fileName = fileName;  // todo: load into recording if file exists
+        this._keyBlacklist = keyBlacklist;  // ignore these keys when detecting diffs
         this._diffKey = diffKey;
         this.rewind();
     }
@@ -148,7 +151,7 @@ export class ListRecording {
 
                 let datumDiff = {};
                 for (let [key, newVal] of Object.entries(toDatum)) {
-                    if (key in fromDatum) {
+                    if (key in fromDatum && !this._keyBlacklist.includes(key)) {
                         if (!compareObjs(fromDatum[key], newVal)) {
                             datumDiff[key] = newVal;  // key update
                         }
