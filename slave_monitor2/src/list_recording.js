@@ -1,6 +1,5 @@
 
 let UNSET = '__UNSET__';  // don't use a Symbol since we want recordings to be serializable for download.
-let MAX_EMPTY_DIFF_STEPS = 3;
 
 export class ListRecording {
 
@@ -36,15 +35,7 @@ export class ListRecording {
     append(newData) {
         let newDiff = this._generateDiff(this._currentData, newData);
         this._recording.push(newDiff);
-        if (this._tooManyEmpties()) {
-            this._recording.pop();
-        }
         this._currentData = newData;
-    }
-
-    _tooManyEmpties() {
-        let lastStreak = this._recording.slice(this._recording.length - (MAX_EMPTY_DIFF_STEPS + 1));
-        return lastStreak.length > MAX_EMPTY_DIFF_STEPS && lastStreak.every(item => item.length === 0);
     }
 
     /**
