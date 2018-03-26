@@ -27,7 +27,7 @@ Slave Monitor
 This is a visualization of the current status of your cluster. It shows builds as they are queued and which slaves
 are working on each build.
 
-![](https://raw.githubusercontent.com/box-labs/ClusterRunner-Dashboard/master/_docs/clusterrunner.gif)
+![](https://cloud.box.com/shared/static/kh4gdu7u3chl61o1k5ljtx5d2wbirx9h.gif)
 
 To build the javascript run:
 ```bash
@@ -47,7 +47,7 @@ Timeline
 --------
 This is a visualization of build execution over time.
 
-![](https://raw.githubusercontent.com/box-labs/ClusterRunner-Dashboard/master/_docs/clusterrunner_timeline.png)
+![](https://cloud.box.com/shared/static/vy0o8oajkud3pf5e8bw1oiifbhgmw255.png)
 
 The timeline dashboard shows the start and end time for subjobs of each build during a time range, configurable via 
 query parameters. Both the overall time window and the displayed builds can be adjusted. See the code at the top of
